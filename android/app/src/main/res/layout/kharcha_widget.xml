@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@drawable/widget_background">
+
+    <TextView
+        android:id="@+id/widget_month"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="March 2026"
+        android:textColor="#80FFFFFF"
+        android:textSize="11sp"
+        android:fontFamily="sans-serif-medium" />
+
+    <TextView
+        android:id="@+id/widget_total"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="₹0"
+        android:textColor="#FFFFFFFF"
+        android:textSize="28sp"
+        android:fontFamily="sans-serif-bold"
+        android:layout_marginTop="4dp" />
+
+    <TextView
+        android:id="@+id/widget_reaction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Track karo paaji! 🔥"
+        android:textColor="#60FFFFFF"
+        android:textSize="10sp"
+        android:fontFamily="sans-serif"
+        android:layout_marginTop="4dp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🔥 Bhawuk's Kharcha"
+            android:textColor="#FFFF6B35"
+            android:textSize="10sp"
+            android:fontFamily="sans-serif-medium" />
+
+        <TextView
+            android:id="@+id/widget_txn_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 expenses"
+            android:textColor="#40FFFFFF"
+            android:textSize="10sp"
+            android:fontFamily="sans-serif" />
+    </LinearLayout>
+
+</LinearLayout>

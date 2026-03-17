@@ -1,5 +1,5 @@
 name: pocket_ledger
-description: "PocketLedger - Premium Fintech Expense Tracker"
+description: "Bhawuk's Kharcha - Track Your Spending, Punjabi Style"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -15,13 +15,17 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   fl_chart: ^0.70.2
-  flex_color_scheme: ^8.3.1 # Ensure this is the latest to use defaultRadius
+  flex_color_scheme: ^8.3.1
   animations: ^2.0.11
   intl: ^0.20.2
   uuid: ^4.5.1
   flutter_hooks: ^0.20.5
   hooks_riverpod: ^2.6.1
   google_fonts: ^6.2.1
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.10.0
+  permission_handler: ^11.3.1
+  home_widget: ^0.7.0
 
 dev_dependencies:
   flutter_test:
@@ -29,6 +33,15 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   hive_generator: ^2.0.1
   build_runner: ^2.4.13
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/logo.png"
+  min_sdk_android: 21 # android min sdk min:16, default:21
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/logo.png

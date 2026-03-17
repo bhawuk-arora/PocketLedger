@@ -8,6 +8,8 @@ import 'package:pocket_ledger/features/expenses/data/models/expense_model.dart';
 import 'package:pocket_ledger/features/expenses/data/repositories/expense_repository.dart';
 import 'package:pocket_ledger/features/expenses/presentation/widgets/add_expense_sheet.dart';
 import 'package:pocket_ledger/features/auth/presentation/auth_notifier.dart';
+import 'package:pocket_ledger/features/settings/presentation/settings_sheet.dart';
+import 'package:pocket_ledger/core/widget_service.dart';
 
 // ─── Cheeky Copy ─────────────────────────────────────────────────────────────
 
@@ -70,6 +72,11 @@ class DashboardScreen extends HookConsumerWidget {
     final expensesAsync = ref.watch(expenseStreamProvider);
     final theme = Theme.of(context);
 
+    // Update home screen widget when data changes
+    ref.listen(expenseStreamProvider, (previous, next) {
+      next.whenData((expenses) => WidgetService.updateWidget(expenses));
+    });
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: expensesAsync.when(
@@ -125,8 +132,8 @@ class DashboardScreen extends HookConsumerWidget {
                           ),
                         ],
                       ),
-                      child: const Center(
-                        child: Text('🔥', style: TextStyle(fontSize: 18)),
+                      child: Center(
+                        child: Image.asset('assets/logo.png', width: 24, height: 24),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -168,6 +175,16 @@ class DashboardScreen extends HookConsumerWidget {
                       );
                       await ref.read(expenseRepositoryProvider).nuclearSync();
                       ref.invalidate(expenseStreamProvider);
+                    },
+                  ),
+                  _GlowButton(
+                    icon: Icons.settings_rounded,
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => const SettingsSheet(),
+                      );
                     },
                   ),
                   _GlowButton(
@@ -609,38 +626,140 @@ class _InsightsRow extends StatelessWidget {
       );
     }).toList();
 
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: _InsightCard(
-            title: 'Kiski galti? 🥧',
-            child: Center(
-              child: SizedBox(
-                height: 80,
-                child: PieChart(
-                  PieChartData(
-                    sections: pieSections,
-                    centerSpaceRadius: 16,
-                    sectionsSpace: 3,
+        // Category Breakdown with legend
+        _InsightCard(
+          title: 'Kiski galti? 🥧',
+          height: 200,
+          child: Row(
+            children: [
+              // Pie chart
+              Expanded(
+                flex: 2,
+                child: Center(
+                  child: SizedBox(
+                    height: 100,
+                    child: PieChart(
+                      PieChartData(
+                        sections: pieSections,
+                        centerSpaceRadius: 20,
+                        sectionsSpace: 3,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
+              const SizedBox(width: 8),
+              // Legend
+              Expanded(
+                flex: 3,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: sortedCategories.asMap().entries.map((entry) {
+                    final colorIndex = entry.key % chartColors.length;
+                    final cat = entry.value;
+                    final total = categoryTotals.values.fold(0.0, (a, b) => a + b);
+                    final pct = total > 0 ? (cat.value / total * 100).toStringAsFixed(0) : '0';
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: chartColors[colorIndex],
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              cat.key,
+                              style: GoogleFonts.poppins(
+                                color: Colors.white.withValues(alpha: 0.6),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Text(
+                            '$pct%',
+                            style: GoogleFonts.poppins(
+                              color: chartColors[colorIndex],
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _InsightCard(
-            title: 'Udaan Report 📊',
-            child: SizedBox(
-              height: 80,
-              child: BarChart(
-                BarChartData(
-                  gridData: const FlGridData(show: false),
-                  titlesData: const FlTitlesData(show: false),
-                  borderData: FlBorderData(show: false),
-                  barGroups: barGroups,
-                  maxY: maxVal == 0 ? 10 : maxVal * 1.2,
+        const SizedBox(height: 12),
+        // Weekly bar chart with day labels
+        _InsightCard(
+          title: 'Last 7 Days 📊',
+          height: 165,
+          child: SizedBox(
+            height: 120,
+            child: BarChart(
+              BarChartData(
+                gridData: const FlGridData(show: false),
+                borderData: FlBorderData(show: false),
+                barGroups: barGroups,
+                maxY: maxVal == 0 ? 10 : maxVal * 1.3,
+                titlesData: FlTitlesData(
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 24,
+                      getTitlesWidget: (value, meta) {
+                        final idx = value.toInt();
+                        if (idx < 0 || idx >= last7Days.length) return const SizedBox.shrink();
+                        final day = last7Days[idx];
+                        final dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                        final isToday = idx == 6;
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            dayNames[day.weekday - 1],
+                            style: GoogleFonts.poppins(
+                              color: isToday ? const Color(0xFFFF6B35) : Colors.white.withValues(alpha: 0.25),
+                              fontSize: 9,
+                              fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                    tooltipRoundedRadius: 8,
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      final amount = rod.toY < 1 ? 0.0 : rod.toY;
+                      return BarTooltipItem(
+                        '₹${amount.toStringAsFixed(0)}',
+                        GoogleFonts.poppins(
+                          color: const Color(0xFFFF6B35),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 11,
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -654,12 +773,13 @@ class _InsightsRow extends StatelessWidget {
 class _InsightCard extends StatelessWidget {
   final String title;
   final Widget child;
-  const _InsightCard({required this.title, required this.child});
+  final double height;
+  const _InsightCard({required this.title, required this.child, this.height = 148});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 148,
+      height: height,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A24),
@@ -716,6 +836,112 @@ class _TransactionItem extends ConsumerWidget {
     }
   }
 
+  void _showDeleteConfirmation(BuildContext context, WidgetRef ref) {
+    final indianRupeeFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Sachchi delete karna hai? 🤔',
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F0F14),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  Text(_getCategoryEmoji(expense.category), style: const TextStyle(fontSize: 24)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          expense.place.isEmpty || expense.place == 'Unknown'
+                              ? expense.category
+                              : expense.place,
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                        Text(
+                          indianRupeeFormat.format(expense.amount),
+                          style: GoogleFonts.poppins(
+                            color: const Color(0xFFFF6B6B),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Ye wapis nahi aayega, pakka delete?',
+              style: GoogleFonts.poppins(
+                color: Colors.white.withValues(alpha: 0.4),
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Rehne de',
+              style: GoogleFonts.poppins(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              ref.read(expenseRepositoryProvider).deleteExpense(index, expense.remoteId);
+              final msgs = ['Khatam-tata-bye-bye 👋', 'Ud gaya! Samajh ja 💨', 'Saboot mitaa diye 🗑️', 'Hoya hi nahi samajh le 🤫'];
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(msgs[Random().nextInt(msgs.length)], style: GoogleFonts.poppins()),
+                  backgroundColor: const Color(0xFF1A1A24),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
+            child: Text(
+              'Hatao! 🗑️',
+              style: GoogleFonts.poppins(
+                color: const Color(0xFFFF6B6B),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final indianRupeeFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
@@ -727,18 +953,10 @@ class _TransactionItem extends ConsumerWidget {
       child: Dismissible(
         key: Key(expense.remoteId),
         direction: DismissDirection.endToStart,
-        onDismissed: (_) {
-          ref.read(expenseRepositoryProvider).deleteExpense(index, expense.remoteId);
-          final msgs = ['Khatam-tata-bye-bye 👋', 'Ud gaya! Samajh ja 💨', 'Saboot mitaa diye 🗑️', 'Hoya hi nahi samajh le 🤫'];
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(msgs[Random().nextInt(msgs.length)], style: GoogleFonts.poppins()),
-              backgroundColor: const Color(0xFF1A1A24),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              duration: const Duration(seconds: 2),
-            ),
-          );
+        confirmDismiss: (_) async {
+          // Show confirmation before dismissing
+          _showDeleteConfirmation(context, ref);
+          return false; // We handle deletion in the dialog
         },
         background: Container(
           alignment: Alignment.centerRight,
@@ -764,6 +982,115 @@ class _TransactionItem extends ConsumerWidget {
               isScrollControlled: true,
               backgroundColor: Colors.transparent,
               builder: (context) => AddExpenseSheet(expense: expense, index: index),
+            );
+          },
+          onLongPress: () {
+            // Long-press popup menu
+            showModalBottomSheet(
+              context: context,
+              backgroundColor: Colors.transparent,
+              builder: (ctx) => Container(
+                margin: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A1A24),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 8),
+                    // Drag handle
+                    Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Expense preview
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: catColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Center(child: Text(catEmoji, style: const TextStyle(fontSize: 20))),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  expense.place.isEmpty || expense.place == 'Unknown'
+                                      ? expense.category
+                                      : expense.place,
+                                  style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15),
+                                ),
+                                Text(
+                                  indianRupeeFormat.format(expense.amount),
+                                  style: GoogleFonts.poppins(color: Colors.white.withValues(alpha: 0.4), fontSize: 13),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Divider(color: Colors.white.withValues(alpha: 0.05), height: 1),
+                    // Edit option
+                    ListTile(
+                      leading: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF6B35).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.edit_rounded, color: Color(0xFFFF6B35), size: 18),
+                      ),
+                      title: Text('Edit karo ✏️', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
+                      subtitle: Text('Galti ho gayi? Fix kar le', style: GoogleFonts.poppins(color: Colors.white.withValues(alpha: 0.3), fontSize: 11)),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => AddExpenseSheet(expense: expense, index: index),
+                        );
+                      },
+                    ),
+                    // Delete option
+                    ListTile(
+                      leading: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF6B6B).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.delete_rounded, color: Color(0xFFFF6B6B), size: 18),
+                      ),
+                      title: Text('Delete karo 🗑️', style: GoogleFonts.poppins(color: const Color(0xFFFF6B6B), fontWeight: FontWeight.w600, fontSize: 14)),
+                      subtitle: Text('Saboot mitaa de, jaise hoya hi nahi', style: GoogleFonts.poppins(color: Colors.white.withValues(alpha: 0.3), fontSize: 11)),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        _showDeleteConfirmation(context, ref);
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
             );
           },
           child: Container(

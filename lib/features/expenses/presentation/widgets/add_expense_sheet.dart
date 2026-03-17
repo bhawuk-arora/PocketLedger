@@ -299,6 +299,56 @@ class AddExpenseSheet extends HookConsumerWidget {
                 ),
               ),
             ),
+            // Delete button (only when editing)
+            if (isEditing) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        backgroundColor: const Color(0xFF1A1A24),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        title: Text(
+                          'Sachchi delete karna hai? 🤔',
+                          style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
+                        ),
+                        content: Text(
+                          'Ye wapis nahi aayega, pakka delete?',
+                          style: GoogleFonts.poppins(color: Colors.white.withValues(alpha: 0.4), fontSize: 13),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: Text('Rehne de', style: GoogleFonts.poppins(color: Colors.white.withValues(alpha: 0.5), fontWeight: FontWeight.w600)),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              ref.read(expenseRepositoryProvider).deleteExpense(index!, expense!.remoteId);
+                              Navigator.pop(context);
+                            },
+                            child: Text('Hatao! 🗑️', style: GoogleFonts.poppins(color: const Color(0xFFFF6B6B), fontWeight: FontWeight.w700)),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: const Color(0xFFFF6B6B).withValues(alpha: 0.3)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  icon: const Icon(Icons.delete_rounded, color: Color(0xFFFF6B6B), size: 18),
+                  label: Text(
+                    'Delete Karo 🗑️',
+                    style: GoogleFonts.poppins(color: const Color(0xFFFF6B6B), fontWeight: FontWeight.w600, fontSize: 13),
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 24),
           ],
         ),

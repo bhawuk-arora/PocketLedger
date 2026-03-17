@@ -8,6 +8,7 @@ import 'package:pocket_ledger/features/expenses/data/models/expense_model.dart';
 import 'package:pocket_ledger/features/expenses/presentation/screens/dashboard_screen.dart';
 import 'package:pocket_ledger/features/auth/presentation/auth_notifier.dart';
 import 'package:pocket_ledger/features/auth/presentation/screens/auth_screen.dart';
+import 'package:pocket_ledger/core/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +25,9 @@ void main() async {
     url: AppConstants.supabaseUrl,
     anonKey: AppConstants.supabaseAnonKey,
   );
+
+  // Initialize Notifications
+  await NotificationService().initialize();
 
   runApp(
     ProviderScope(

@@ -41,8 +41,8 @@ class AuthScreen extends HookConsumerWidget {
                     ),
                   ],
                 ),
-                child: const Center(
-                  child: Text('🔥', style: TextStyle(fontSize: 28)),
+                child: Center(
+                  child: Image.asset('assets/logo.png', width: 32, height: 32),
                 ),
               ),
               const SizedBox(height: 32),
