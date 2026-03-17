@@ -311,7 +311,7 @@ class DashboardScreen extends HookConsumerWidget {
                 ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 48, bottom: 120),
+                  padding: const EdgeInsets.only(top: 48, bottom: 180),
                   child: Center(
                     child: Text(
                       'banaaya with ☕ & galat decisions\nby Bhawuk 🫡',

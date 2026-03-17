@@ -72,9 +72,24 @@ class AllTransactionsScreen extends ConsumerWidget {
               ),
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.only(left: 20, right: 20, top: 0, bottom: 100),
-                  itemCount: monthExpenses.length,
+                  padding: const EdgeInsets.only(left: 20, right: 20, top: 0, bottom: 180),
+                  itemCount: monthExpenses.length + 1,
                   itemBuilder: (context, index) {
+                    if (index == monthExpenses.length) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 48),
+                        child: Center(
+                          child: Text(
+                            'Saare pakke saboot ne 📝🫡',
+                            style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              color: Colors.white.withValues(alpha: 0.1),
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
                     final expense = monthExpenses[index];
                     return _FullTransactionItem(expense: expense);
                   },

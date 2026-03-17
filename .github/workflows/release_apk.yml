@@ -69,12 +69,10 @@ jobs:
           # Only try to build signed if we have the secrets
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "$KEYSTORE_BASE64" | base64 --decode > android/app/release-keystore.jks
-            cat > android/key.properties << EOF
-            storePassword=$STORE_PASSWORD
-            keyPassword=$KEY_PASSWORD
-            keyAlias=$KEY_ALIAS
-            storeFile=release-keystore.jks
-            EOF
+            echo "storePassword=$STORE_PASSWORD" > android/key.properties
+            echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
+            echo "keyAlias=$KEY_ALIAS" >> android/key.properties
+            echo "storeFile=release-keystore.jks" >> android/key.properties
           fi
           flutter build apk --release --split-per-abi
           flutter build apk --release
