@@ -3,7 +3,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:pocket_ledger/features/expenses/data/models/expense_model.dart';
-import 'package:pocket_ledger/features/expenses/data/repositories/expense_repository.dart';
 import 'package:pocket_ledger/features/expenses/presentation/screens/dashboard_screen.dart'; // To reuse _TransactionItem if possible, but it might be private.
 
 class AllTransactionsScreen extends ConsumerWidget {
@@ -73,7 +72,7 @@ class AllTransactionsScreen extends ConsumerWidget {
               ),
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                  padding: const EdgeInsets.only(left: 20, right: 20, top: 0, bottom: 100),
                   itemCount: monthExpenses.length,
                   itemBuilder: (context, index) {
                     final expense = monthExpenses[index];

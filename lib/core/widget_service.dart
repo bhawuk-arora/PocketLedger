@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:pocket_ledger/features/expenses/data/models/expense_model.dart';
 
 class WidgetService {
-  static const String _groupId = 'group.com.example.pocket_ledger'; // iOS suite name, but good practice
   static const String _androidWidgetName = 'KharchaWidgetProvider';
 
   static Future<void> updateWidget(List<Expense> expenses) async {

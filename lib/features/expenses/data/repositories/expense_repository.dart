@@ -134,8 +134,8 @@ class ExpenseRepository {
       for (final expense in unsyncedLocal) {
         await _box.add(expense);
       }
-    } catch (e) {
-      print('Sync Error: $e');
+    } catch (_) {
+      // Offline or sync error - will retry on next sync
     }
   }
 
@@ -235,7 +235,9 @@ class ExpenseRepository {
       }).match({'id': remoteId});
       expense.synced = true;
       await expense.save();
-    } catch (e) {}
+    } catch (_) {
+      // Will be retried on next sync
+    }
   }
 
   Future<void> deleteExpense(int localIndex, String remoteId) async {

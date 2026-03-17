@@ -311,7 +311,7 @@ class DashboardScreen extends HookConsumerWidget {
                 ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 48),
+                  padding: const EdgeInsets.only(top: 48, bottom: 120),
                   child: Center(
                     child: Text(
                       'banaaya with ☕ & galat decisions\nby Bhawuk 🫡',
@@ -688,7 +688,9 @@ class _InsightsRow extends StatelessWidget {
     final now = DateTime.now();
     final last7Days = List.generate(7, (i) => DateTime(now.year, now.month, now.day - (6 - i)));
     final dailyTotals = <DateTime, double>{};
-    for (var date in last7Days) dailyTotals[date] = 0;
+    for (var date in last7Days) {
+      dailyTotals[date] = 0;
+    }
 
     for (var e in monthExpenses) {
       final expenseDate = DateTime(e.date.year, e.date.month, e.date.day);
