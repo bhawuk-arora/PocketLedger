@@ -175,7 +175,11 @@ class DashboardScreen extends HookConsumerWidget {
                         ),
                       );
 
-                      await ref.read(expenseRepositoryProvider).nuclearSync();
+                      // Execute sync and ensure loader shows for at least 2 seconds
+                      final syncFuture = ref.read(expenseRepositoryProvider).nuclearSync();
+                      final delayFuture = Future.delayed(const Duration(milliseconds: 2000));
+                      
+                      await Future.wait([syncFuture, delayFuture]);
                       ref.invalidate(expenseStreamProvider);
                       
                       if (context.mounted) {
@@ -393,12 +397,20 @@ class DashboardScreen extends HookConsumerWidget {
 
 // ─── Cheeky Animated Loader ──────────────────────────────────────────────────
 
-class _CheekyLoader extends StatelessWidget {
+class _CheekyLoader extends HookWidget {
   final String message;
   const _CheekyLoader({required this.message});
 
   @override
   Widget build(BuildContext context) {
+    final controller = useAnimationController(
+      duration: const Duration(milliseconds: 3000),
+    )..repeat(reverse: true);
+
+    final pulse = useAnimation(Tween(begin: 0.85, end: 1.15).animate(
+      CurvedAnimation(parent: controller, curve: Curves.easeInOut),
+    ));
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -406,46 +418,43 @@ class _CheekyLoader extends StatelessWidget {
           Stack(
             alignment: Alignment.center,
             children: [
-              // Pulsing glow
-              TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0.8, end: 1.2),
-                duration: const Duration(seconds: 1),
-                curve: Curves.easeInOutSine,
-                builder: (context, value, child) {
-                  return Container(
-                    width: 70 * value,
-                    height: 70 * value,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFF6B35).withValues(alpha: 0.08 * (1.2 - value + 0.8)),
-                          blurRadius: 20,
-                          spreadRadius: 8,
-                        ),
-                      ],
+              // Pulsing glow (Looping)
+              Container(
+                width: 75 * pulse,
+                height: 75 * pulse,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFF6B35).withValues(alpha: 0.12 * (1.15 - pulse + 0.85)),
+                      blurRadius: 30,
+                      spreadRadius: 10 * pulse,
                     ),
-                  );
-                },
-              ),
-              // Rotating Ring
-              const SizedBox(
-                width: 60,
-                height: 60,
-                child: CircularProgressIndicator(
-                  color: Color(0xFFFF6B35),
-                  strokeWidth: 2,
+                  ],
                 ),
               ),
-              // App Logo
-              Image.asset('assets/logo.png', width: 32, height: 32),
+              // App Logo (Static & Clean)
+              Image.asset('assets/logo.png', width: 36, height: 36),
+              // Rotating Ring (Slower)
+              SizedBox(
+                width: 64,
+                height: 64,
+                child: CircularProgressIndicator(
+                  color: const Color(0xFFFF6B35),
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    const Color(0xFFFF6B35).withValues(alpha: 0.8),
+                  ),
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 40),
           Text(
             message,
+            textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-              color: Colors.white.withValues(alpha: 0.3),
+              color: Colors.white.withValues(alpha: 0.4),
               fontSize: 14,
               fontWeight: FontWeight.w500,
               letterSpacing: 0.5,
