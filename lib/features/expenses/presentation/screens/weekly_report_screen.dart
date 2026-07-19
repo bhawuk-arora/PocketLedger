@@ -54,7 +54,6 @@ class WeeklyReportScreen extends HookConsumerWidget {
     required List<MapEntry<String, double>> categories,
     required Expense? biggestExpense,
     required double dailyAverage,
-    required String topCategoryTip,
   }) async {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final user = Supabase.instance.client.auth.currentUser;
@@ -175,16 +174,10 @@ class WeeklyReportScreen extends HookConsumerWidget {
           </tbody>
         </table>
 
-        <div style="background-color: #1A1A24; padding: 16px; border-radius: 10px; font-size: 13px; border: 1px solid rgba(255, 255, 255, 0.02); margin-bottom: 20px;">
+        <div style="background-color: #1A1A24; padding: 16px; border-radius: 10px; font-size: 13px; border: 1px solid rgba(255, 255, 255, 0.02); margin-bottom: 0px;">
           <div style="margin-bottom: 8px; color: #94A3B8;"><strong style="color: #FFFFFF;">📅 Daily Average:</strong> ₹${dailyAverage.toStringAsFixed(2)} / day</div>
           <div style="margin-bottom: 8px; color: #94A3B8;"><strong style="color: #FFFFFF;">📍 Waddi Chot 💥 (Biggest Spend):</strong> $biggestExpenseRow</div>
         </div>
-
-        ${topCategoryTip.isNotEmpty ? '''
-        <div style="background-color: rgba(255, 107, 53, 0.08); padding: 16px; border-radius: 10px; border: 1px solid rgba(255, 107, 53, 0.2); font-size: 12.5px; line-height: 1.5; color: #FFD166;">
-          $topCategoryTip
-        </div>
-        ''' : ''}
         
         <div style="text-align: center; margin-top: 32px; font-size: 11px; color: #475569; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 16px;">
           Banaaya with ☕ & galat decisions by Bhawuk 🫡
@@ -356,30 +349,7 @@ class WeeklyReportScreen extends HookConsumerWidget {
             cheekyComment = "Oye hoye Bhawuk! Kya tussi poora market khareed lya? Thoda saah lao, paise ped te nahi ugde!";
           }
 
-          // Smart Tip
-          String topCategoryTip = "";
-          if (sortedCategories.isNotEmpty) {
-            final topCat = sortedCategories.first.key.toLowerCase();
-            switch (topCat) {
-              case 'food':
-                topCategoryTip = "🍲 Foodie Alert: Rajma Chawal & snacks dominated your expenses this week. Eat home-cooked meals to save more next week!";
-                break;
-              case 'shopping':
-                topCategoryTip = "🛍️ Shopping Alert: You spent the most on shopping. Avoid impulsive online orders, your wallet needs a break!";
-                break;
-              case 'transport':
-                topCategoryTip = "🚗 Gedi Route: Gediyaan hi maarde reh gaye paaji! Consider carpooling or walking where possible.";
-                break;
-              case 'entertainment':
-                topCategoryTip = "🎬 Fun overload: Movies and fun took a big bite. Balance the entertainment with budget discipline.";
-                break;
-              case 'bills':
-                topCategoryTip = "📨 Fixed Costs: Bills were high. Make sure subscriptions you don't use are cancelled.";
-                break;
-              default:
-                topCategoryTip = "💡 Budget Tip: Try setting a small daily budget limit in the app to reduce miscellaneous spending next week.";
-            }
-          }
+
 
           // Daily Average
           final dailyAverage = totalSpend / 7;
@@ -671,24 +641,7 @@ class WeeklyReportScreen extends HookConsumerWidget {
                         );
                       }),
 
-                    // Smart Tip suggestion card
-                    if (topCategoryTip.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFF6B35).withValues(alpha: 0.08),
-                          border: Border.all(color: const Color(0xFFFF6B35).withValues(alpha: 0.2)),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          topCategoryTip,
-                          style: GoogleFonts.poppins(color: const Color(0xFFFFD166), fontSize: 12, height: 1.5),
-                        ),
-                      ),
-                    ],
-
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 24),
 
                     // Email Report button
                     ElevatedButton.icon(
@@ -703,7 +656,6 @@ class WeeklyReportScreen extends HookConsumerWidget {
                         categories: sortedCategories,
                         biggestExpense: biggest,
                         dailyAverage: dailyAverage,
-                        topCategoryTip: topCategoryTip,
                       ),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),

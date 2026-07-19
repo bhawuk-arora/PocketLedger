@@ -155,36 +155,7 @@ async function run() {
     // Daily Average
     const dailyAverage = totalWeek1 / 7;
 
-    // Smart Suggestion Tip based on top spending category
-    let topCategoryTip = "";
-    const emojis = {
-      'food': '🍔', 'transport': '🚗', 'shopping': '🛍️',
-      'bills': '📨', 'entertainment': '🎬', 'health': '💊',
-      'sports': '⚽', 'miscellaneous': '🏷️'
-    };
 
-    if (sortedCategories.length > 0) {
-      const topCat = sortedCategories[0][0].toLowerCase();
-      switch (topCat) {
-        case 'food':
-          topCategoryTip = "🍲 <strong>Foodie Alert:</strong> Rajma Chawal & snacks dominated your expenses this week. Eat home-cooked meals to save more next week!";
-          break;
-        case 'shopping':
-          topCategoryTip = "🛍️ <strong>Shopping Alert:</strong> You spent the most on shopping. Avoid impulsive online orders, your wallet needs a break!";
-          break;
-        case 'transport':
-          topCategoryTip = "🚗 <strong>Gedi Route:</strong> Gediyaan hi maarde reh gaye paaji! Consider carpooling or walking where possible.";
-          break;
-        case 'entertainment':
-          topCategoryTip = "🎬 <strong>Fun overload:</strong> Movies and fun took a big bite. Balance the entertainment with budget discipline.";
-          break;
-        case 'bills':
-          topCategoryTip = "📨 <strong>Fixed Costs:</strong> Bills were high. Make sure subscriptions you don't use are cancelled.";
-          break;
-        default:
-          topCategoryTip = "💡 <strong>Budget Tip:</strong> Try setting a small daily budget limit in the app to reduce miscellaneous spending next week.";
-      }
-    }
 
     // Format category HTML list with percentages
     const categoryHtmlList = sortedCategories.map(([cat, amount]) => {
@@ -226,16 +197,10 @@ async function run() {
           </tbody>
         </table>
 
-        <div style="background-color: #1A1A24; padding: 16px; border-radius: 10px; font-size: 13px; border: 1px solid rgba(255, 255, 255, 0.02); margin-bottom: 20px;">
+        <div style="background-color: #1A1A24; padding: 16px; border-radius: 10px; font-size: 13px; border: 1px solid rgba(255, 255, 255, 0.02); margin-bottom: 0px;">
           <div style="margin-bottom: 8px; color: #94A3B8;"><strong style="color: #FFFFFF;">📅 Daily Average:</strong> ₹${dailyAverage.toFixed(2)} / day</div>
           <div style="margin-bottom: 8px; color: #94A3B8;"><strong style="color: #FFFFFF;">📍 Waddi Chot 💥 (Biggest Spend):</strong> ${biggestExpense.place} (${biggestExpense.category}) — <span style="color: #FF6B6B; font-weight: 700;">₹${biggestExpense.amount.toFixed(2)}</span></div>
         </div>
-
-        ${topCategoryTip ? `
-        <div style="background-color: rgba(255, 107, 53, 0.08); padding: 16px; border-radius: 10px; border: 1px solid rgba(255, 107, 53, 0.2); font-size: 12.5px; line-height: 1.5; color: #FFD166;">
-          ${topCategoryTip}
-        </div>
-        ` : ''}
         
         <div style="text-align: center; margin-top: 32px; font-size: 11px; color: #475569; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 16px;">
           Banaaya with ☕ & galat decisions by Bhawuk 🫡
