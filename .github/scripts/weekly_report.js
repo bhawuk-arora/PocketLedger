@@ -10,10 +10,10 @@ if (!supabaseUrl || !supabaseKey || !resendApiKey || !toEmail) {
   process.exit(1);
 }
 
-// Fetch last 7 days of expenses
-const oneWeekAgo = new Date();
-oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-const dateString = oneWeekAgo.toISOString();
+// Fetch past 14 days of expenses to support weekly comparison
+const fourteenDaysAgo = new Date();
+fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+const dateString = fourteenDaysAgo.toISOString();
 
 function makeRequest(url, headers, method, body) {
   return new Promise((resolve, reject) => {
@@ -47,7 +47,7 @@ function makeRequest(url, headers, method, body) {
 
 async function run() {
   try {
-    // Supabase query to get expenses of last 7 days
+    // Supabase query to get expenses of last 14 days
     const queryUrl = `${supabaseUrl}/rest/v1/expenses?date=gte.${dateString}&select=*`;
     const supabaseHeaders = {
       'apikey': supabaseKey,
@@ -57,22 +57,45 @@ async function run() {
 
     console.log("Fetching expenses from Supabase...");
     const expenses = await makeRequest(queryUrl, supabaseHeaders);
-    console.log(`Fetched ${expenses.length} expenses.`);
+    console.log(`Fetched ${expenses.length} expenses from past 14 days.`);
 
-    if (expenses.length === 0) {
-      console.log("No expenses recorded this week!");
-      await sendEmptyReportEmail();
+    const now = new Date();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(now.getDate() - 7);
+
+    // Format Date Range Nice String (e.g. 12 Jul 2026 - 19 Jul 2026)
+    const dateOptions = { day: '2-digit', month: 'short', year: 'numeric' };
+    const periodStart = sevenDaysAgo.toLocaleDateString('en-IN', dateOptions);
+    const periodEnd = now.toLocaleDateString('en-IN', dateOptions);
+    const datePeriodString = `${periodStart} - ${periodEnd}`;
+
+    // Split into Week 1 (last 7 days) and Week 2 (previous 7 days)
+    const week1Expenses = [];
+    const week2Expenses = [];
+
+    expenses.forEach(exp => {
+      const expDate = new Date(exp.date);
+      if (expDate >= sevenDaysAgo) {
+        week1Expenses.push(exp);
+      } else {
+        week2Expenses.push(exp);
+      }
+    });
+
+    if (week1Expenses.length === 0) {
+      console.log("No expenses recorded in the last 7 days!");
+      await sendEmptyReportEmail(datePeriodString);
       return;
     }
 
-    // Process expenses
-    let totalDamage = 0;
+    // Process Week 1 (Latest Week)
+    let totalWeek1 = 0;
     const categoryBreakdown = {};
     let biggestExpense = { amount: 0, place: 'N/A', category: 'N/A' };
 
-    expenses.forEach(exp => {
+    week1Expenses.forEach(exp => {
       const amount = parseFloat(exp.amount || 0);
-      totalDamage += amount;
+      totalWeek1 += amount;
 
       const cat = exp.category || 'Miscellaneous';
       categoryBreakdown[cat] = (categoryBreakdown[cat] || 0) + amount;
@@ -82,19 +105,25 @@ async function run() {
       }
     });
 
-    // Sort categories
+    // Process Week 2 (Comparison Week)
+    let totalWeek2 = 0;
+    week2Expenses.forEach(exp => {
+      totalWeek2 += parseFloat(exp.amount || 0);
+    });
+
+    // Sort categories by spend amount
     const sortedCategories = Object.entries(categoryBreakdown).sort((a, b) => b[1] - a[1]);
 
     // Choose funny Punjabi comment based on total spending
     let cheekTitle = "";
     let cheekyComment = "";
-    if (totalDamage === 0) {
+    if (totalWeek1 === 0) {
       cheekTitle = "Paise bacha laye paaji! 💸";
       cheekyComment = "Sacchii? Ek bhi kharcha nahi? Dil khush kar ditta!";
-    } else if (totalDamage < 2000) {
+    } else if (totalWeek1 < 2000) {
       cheekTitle = "Control ch hai kharcha! 🧘‍♂️";
       cheekyComment = "Bhawuk paaji, tussi te kamaal kar ditta! Wallet haseen lag rha hai.";
-    } else if (totalDamage < 5000) {
+    } else if (totalWeek1 < 5000) {
       cheekTitle = "Halke-Phulke jhatke! ⚡";
       cheekyComment = "Thoda control karo paaji! Rajma Chawal thode ghaat khao, wallet slim ho rha hai.";
     } else {
@@ -102,40 +131,106 @@ async function run() {
       cheekyComment = "Oye hoye Bhawuk! Kya tussi poora market khareed lya? Thoda saah lao, paise ped te nahi ugde!";
     }
 
-    // Format category HTML list
+    // Weekly Trend HTML Comparison
+    let trendHtml = "";
+    if (totalWeek2 > 0) {
+      const diff = totalWeek1 - totalWeek2;
+      const percent = Math.abs((diff / totalWeek2) * 100).toFixed(0);
+      if (diff > 0) {
+        trendHtml = `<div style="color: #FF6B6B; font-size: 13px; font-weight: 700; margin-top: 6px;">📈 Up by ${percent}% compared to last week (+₹${diff.toFixed(2)})</div>`;
+      } else if (diff < 0) {
+        trendHtml = `<div style="color: #4ADE80; font-size: 13px; font-weight: 700; margin-top: 6px;">📉 Down by ${percent}% compared to last week (-₹${Math.abs(diff).toFixed(2)})</div>`;
+      } else {
+        trendHtml = `<div style="color: #94A3B8; font-size: 13px; font-weight: 700; margin-top: 6px;">⚖️ Spend is exactly identical to last week!</div>`;
+      }
+    } else {
+      trendHtml = `<div style="color: #94A3B8; font-size: 12px; margin-top: 6px;">ℹ️ Comparing with ₹0.00 from the previous week.</div>`;
+    }
+
+    // Daily Average
+    const dailyAverage = totalWeek1 / 7;
+
+    // Smart Suggestion Tip based on top spending category
+    let topCategoryTip = "";
     const emojis = {
       'food': '🍔', 'transport': '🚗', 'shopping': '🛍️',
       'bills': '📨', 'entertainment': '🎬', 'health': '💊',
       'sports': '⚽', 'miscellaneous': '🏷️'
     };
+
+    if (sortedCategories.length > 0) {
+      const topCat = sortedCategories[0][0].toLowerCase();
+      switch (topCat) {
+        case 'food':
+          topCategoryTip = "🍲 <strong>Foodie Alert:</strong> Rajma Chawal & snacks dominated your expenses this week. Eat home-cooked meals to save more next week!";
+          break;
+        case 'shopping':
+          topCategoryTip = "🛍️ <strong>Shopping Alert:</strong> You spent the most on shopping. Avoid impulsive online orders, your wallet needs a break!";
+          break;
+        case 'transport':
+          topCategoryTip = "🚗 <strong>Gedi Route:</strong> Gediyaan hi maarde reh gaye paaji! Consider carpooling or walking where possible.";
+          break;
+        case 'entertainment':
+          topCategoryTip = "🎬 <strong>Fun overload:</strong> Movies and fun took a big bite. Balance the entertainment with budget discipline.";
+          break;
+        case 'bills':
+          topCategoryTip = "📨 <strong>Fixed Costs:</strong> Bills were high. Make sure subscriptions you don't use are cancelled.";
+          break;
+        default:
+          topCategoryTip = "💡 <strong>Budget Tip:</strong> Try setting a small daily budget limit in the app to reduce miscellaneous spending next week.";
+      }
+    }
+
+    // Format category HTML list with percentages
     const categoryHtmlList = sortedCategories.map(([cat, amount]) => {
       const emoji = emojis[cat.toLowerCase()] || '💰';
-      return `<li style="margin: 8px 0; font-size: 14px; color: #E2E8F0;"><strong>${emoji} ${cat}:</strong> ₹${amount.toFixed(2)}</li>`;
+      const percentage = totalWeek1 > 0 ? ((amount / totalWeek1) * 100).toFixed(0) : 0;
+      return `
+        <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.04); font-size: 14px; color: #E2E8F0;">
+          <td style="padding: 10px 0; font-weight: 500;">${emoji} ${cat}</td>
+          <td style="padding: 10px 0; text-align: right; font-weight: 600;">₹${amount.toFixed(2)}</td>
+          <td style="padding: 10px 0; text-align: right; color: #94A3B8; font-size: 12px; font-weight: 700;">${percentage}%</td>
+        </tr>
+      `;
     }).join('');
 
     // Generate HTML Body
     const htmlBody = `
       <div style="font-family: Arial, sans-serif; background-color: #0F0F14; color: #FFFFFF; padding: 32px; border-radius: 16px; max-width: 500px; margin: 0 auto; border: 1px solid #1F1F2E;">
         <h1 style="color: #FF6B35; font-size: 22px; font-weight: 700; margin-bottom: 4px; text-align: center; letter-spacing: -0.5px;">🦁 Bhawuk da Weekly Damage Report</h1>
-        <p style="font-size: 11px; color: #64748B; text-align: center; margin-top: 0; margin-bottom: 24px; text-transform: uppercase; letter-spacing: 1px;">Hisaab-kitab Punjabi style vich!</p>
+        <p style="font-size: 12px; color: #64748B; text-align: center; margin-top: 0; margin-bottom: 8px; font-weight: 600;">📅 ${datePeriodString}</p>
+        <p style="font-size: 10px; color: #475569; text-align: center; margin-top: 0; margin-bottom: 24px; text-transform: uppercase; letter-spacing: 1px;">Hisaab-kitab Punjabi style vich!</p>
         
         <div style="background-color: #1A1A24; padding: 24px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.04); text-align: center; margin-bottom: 24px;">
-          <h2 style="font-size: 32px; color: #FFFFFF; margin: 0; font-weight: 800; letter-spacing: -1px;">₹${totalDamage.toFixed(2)}</h2>
+          <h2 style="font-size: 32px; color: #FFFFFF; margin: 0; font-weight: 800; letter-spacing: -1px;">₹${totalWeek1.toFixed(2)}</h2>
           <p style="font-size: 13px; color: #FF6B35; font-weight: 700; margin: 8px 0 0 0; text-transform: uppercase; letter-spacing: 0.5px;">${cheekTitle}</p>
-          <p style="font-size: 12px; color: #94A3B8; margin: 8px 0 0 0; font-style: italic; line-height: 1.4;">"${cheekyComment}"</p>
+          ${trendHtml}
+          <p style="font-size: 12px; color: #94A3B8; margin: 12px 0 0 0; font-style: italic; line-height: 1.4;">"${cheekyComment}"</p>
         </div>
-        
-        <h3 style="color: #FFFFFF; font-size: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 8px; margin-bottom: 12px; font-weight: 700;">Kis type da kharcha 🤔:</h3>
-        <ul style="list-style-type: none; padding-left: 0; margin-bottom: 24px;">
-          ${categoryHtmlList}
-        </ul>
-        
-        <h3 style="color: #FFFFFF; font-size: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 8px; margin-bottom: 12px; font-weight: 700;">Waddi Chot 💥 (Biggest Spend):</h3>
-        <div style="background-color: #1A1A24; padding: 16px; border-radius: 10px; font-size: 13px; border: 1px solid rgba(255, 255, 255, 0.02);">
-          <div style="margin-bottom: 6px; color: #94A3B8;"><strong style="color: #FFFFFF;">📍 Place:</strong> ${biggestExpense.place}</div>
-          <div style="margin-bottom: 6px; color: #94A3B8;"><strong style="color: #FFFFFF;">🍔 Category:</strong> ${biggestExpense.category}</div>
-          <div style="color: #94A3B8;"><strong style="color: #FFFFFF;">💰 Amount:</strong> <span style="color: #FF6B6B; font-weight: 700;">₹${biggestExpense.amount.toFixed(2)}</span></div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+          <thead>
+            <tr style="border-bottom: 2px solid rgba(255, 255, 255, 0.06); font-size: 11px; text-transform: uppercase; color: #64748B; letter-spacing: 0.5px;">
+              <th style="text-align: left; padding-bottom: 8px;">Category</th>
+              <th style="text-align: right; padding-bottom: 8px;">Amount</th>
+              <th style="text-align: right; padding-bottom: 8px;">Breakdown</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${categoryHtmlList}
+          </tbody>
+        </table>
+
+        <div style="background-color: #1A1A24; padding: 16px; border-radius: 10px; font-size: 13px; border: 1px solid rgba(255, 255, 255, 0.02); margin-bottom: 20px;">
+          <div style="margin-bottom: 8px; color: #94A3B8;"><strong style="color: #FFFFFF;">📅 Daily Average:</strong> ₹${dailyAverage.toFixed(2)} / day</div>
+          <div style="margin-bottom: 8px; color: #94A3B8;"><strong style="color: #FFFFFF;">📍 Waddi Chot 💥 (Biggest Spend):</strong> ${biggestExpense.place} (${biggestExpense.category}) — <span style="color: #FF6B6B; font-weight: 700;">₹${biggestExpense.amount.toFixed(2)}</span></div>
         </div>
+
+        ${topCategoryTip ? `
+        <div style="background-color: rgba(255, 107, 53, 0.08); padding: 16px; border-radius: 10px; border: 1px solid rgba(255, 107, 53, 0.2); font-size: 12.5px; line-height: 1.5; color: #FFD166;">
+          ${topCategoryTip}
+        </div>
+        ` : ''}
         
         <div style="text-align: center; margin-top: 32px; font-size: 11px; color: #475569; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 16px;">
           Banaaya with ☕ & galat decisions by Bhawuk 🫡
@@ -152,7 +247,7 @@ async function run() {
     const emailResponse = await makeRequest('https://api.resend.com/emails', resendHeaders, 'POST', {
       from: "PocketLedger <reports@ledger-reports.bhawukarora.app>",
       to: [toEmail],
-      subject: `🦁 Weekly Damage: ₹${totalDamage.toFixed(0)} (${cheekTitle})`,
+      subject: `🦁 Weekly Damage: ₹${totalWeek1.toFixed(0)} (${cheekTitle})`,
       html: htmlBody
     });
 
@@ -164,7 +259,7 @@ async function run() {
   }
 }
 
-async function sendEmptyReportEmail() {
+async function sendEmptyReportEmail(datePeriodString) {
   try {
     const resendHeaders = {
       'Authorization': `Bearer ${resendApiKey}`,
@@ -176,7 +271,8 @@ async function sendEmptyReportEmail() {
       subject: "🦁 Weekly Damage: ₹0 (Waah!)",
       html: `
         <div style="font-family: Arial, sans-serif; background-color: #0F0F14; color: #FFFFFF; padding: 32px; border-radius: 16px; max-width: 500px; margin: 0 auto; text-align: center; border: 1px solid #1F1F2E;">
-          <h1 style="color: #FF6B35; font-size: 20px; font-weight: 700; margin-bottom: 24px;">🦁 Bhawuk da Weekly Damage Report 💸</h1>
+          <h1 style="color: #FF6B35; font-size: 20px; font-weight: 700; margin-bottom: 4px;">🦁 Bhawuk da Weekly Damage Report 💸</h1>
+          <p style="font-size: 12px; color: #64748B; margin-top: 0; margin-bottom: 24px; font-weight: 600;">📅 ${datePeriodString}</p>
           <p style="font-size: 32px; color: #FFFFFF; font-weight: 800; margin: 24px 0 12px 0; letter-spacing: -1px;">₹0.00</p>
           <p style="font-size: 14px; color: #4ADE80; font-weight: 600; margin-bottom: 8px;">Sacchii? Ek bhi kharcha nahi? Dil khush kar ditta! 🧘‍♂️</p>
           <p style="font-size: 12px; color: #94A3B8;">Wallet safe hai, aish karo paaji!</p>
@@ -186,6 +282,7 @@ async function sendEmptyReportEmail() {
     console.log("Empty report email sent successfully!");
   } catch (err) {
     console.error("Failed to send empty report email:", err);
+    throw err;
   }
 }
 
