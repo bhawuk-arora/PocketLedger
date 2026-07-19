@@ -61,13 +61,36 @@ jobs:
       - name: Analyze code
         run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
-      # ─── 6. Build Release APK ─────────────────────────────────────────
+      # ─── 6. Extract Version ───────────────────────────────────────────
+      - name: Extract project version
+        id: get_version
+        run: |
+          FULL_VERSION=$(grep 'version:' pubspec.yaml | awk '{print $2}' | tr -d '\r')
+          VERSION_NAME=$(echo $FULL_VERSION | cut -d'+' -f1)
+          # We use github.run_number to ensure the build number always increments
+          VERSION_CODE="${{ github.run_number }}"
+          
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION_NAME+$VERSION_CODE" >> $GITHUB_OUTPUT
+          
+          # Use tag if available, otherwise use version name and code
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+          else
+            TAG_NAME="v$VERSION_NAME-build-$VERSION_CODE"
+          fi
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
+
+      # ─── 7. Build Release APK ─────────────────────────────────────────
       - name: Build Release APK
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          VERSION_NAME: ${{ steps.get_version.outputs.VERSION_NAME }}
+          VERSION_CODE: ${{ steps.get_version.outputs.VERSION_CODE }}
         run: |
           # Only try to build signed if we have the secrets
           if [ -n "$KEYSTORE_BASE64" ]; then
@@ -78,34 +101,19 @@ jobs:
             echo "storeFile=release-keystore.jks" >> android/key.properties
           fi
           
-          # Build split APKs first
-          flutter build apk --release --split-per-abi
+          # Build split APKs first, injecting version name and code
+          flutter build apk --release --split-per-abi --build-name=$VERSION_NAME --build-number=$VERSION_CODE
           
           # Temporarily copy split APKs to a safe place so they aren't wiped out by the universal build
           mkdir -p build/app/outputs/apk_temp
           cp build/app/outputs/flutter-apk/*.apk build/app/outputs/apk_temp/
           
-          # Build universal fat APK
-          flutter build apk --release
+          # Build universal fat APK, injecting version name and code
+          flutter build apk --release --build-name=$VERSION_NAME --build-number=$VERSION_CODE
           
           # Restore split APKs back to the output directory
           cp build/app/outputs/apk_temp/*.apk build/app/outputs/flutter-apk/
           rm -rf build/app/outputs/apk_temp
-
-      # ─── 7. Extract Version ───────────────────────────────────────────
-      - name: Extract project version
-        id: get_version
-        run: |
-          VERSION=$(grep 'version:' pubspec.yaml | awk '{print $2}' | tr -d '\r')
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          
-          # Use tag if available, otherwise use version from pubspec
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            TAG_NAME=${GITHUB_REF#refs/tags/}
-          else
-            TAG_NAME="v$VERSION-build-${{ github.run_number }}"
-          fi
-          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
 
       # ─── 8. Create GitHub Release ─────────────────────────────────────
       - name: Create Release
