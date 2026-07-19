@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'dart:math';
 import 'package:pocket_ledger/features/expenses/data/models/expense_model.dart';
-import 'package:pocket_ledger/features/expenses/presentation/screens/dashboard_screen.dart'; // To reuse _TransactionItem if possible, but it might be private.
+import 'package:pocket_ledger/features/expenses/data/repositories/expense_repository.dart';
+import 'package:pocket_ledger/features/expenses/presentation/screens/dashboard_screen.dart'; 
+import 'package:pocket_ledger/features/expenses/presentation/widgets/add_expense_sheet.dart';
 
 class AllTransactionsScreen extends ConsumerWidget {
   const AllTransactionsScreen({super.key});
@@ -91,7 +94,11 @@ class AllTransactionsScreen extends ConsumerWidget {
                       );
                     }
                     final expense = monthExpenses[index];
-                    return _FullTransactionItem(expense: expense);
+                    final fullIndex = expenses.indexOf(expense);
+                    return _FullTransactionItem(
+                      expense: expense, 
+                      index: fullIndex,
+                    );
                   },
                 ),
               ),
@@ -105,74 +112,218 @@ class AllTransactionsScreen extends ConsumerWidget {
   }
 }
 
-class _FullTransactionItem extends StatelessWidget {
+class _FullTransactionItem extends ConsumerWidget {
   final Expense expense;
-  const _FullTransactionItem({required this.expense});
+  final int index;
+  const _FullTransactionItem({required this.expense, required this.index});
+
+  void _showDeleteConfirmation(BuildContext context, WidgetRef ref) {
+    final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Sachchi delete karna hai? 🤔',
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F0F14),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  Text(_getCategoryEmoji(expense.category), style: const TextStyle(fontSize: 24)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          expense.place.isEmpty || expense.place == 'Unknown'
+                              ? expense.category
+                              : expense.place,
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                        Text(
+                          currencyFormat.format(expense.amount),
+                          style: GoogleFonts.poppins(
+                            color: const Color(0xFFFF6B6B),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Ye wapis nahi aayega, pakka delete?',
+              style: GoogleFonts.poppins(
+                color: Colors.white.withValues(alpha: 0.4),
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Rehne de',
+              style: GoogleFonts.poppins(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              ref.read(expenseRepositoryProvider).deleteExpense(index, expense.remoteId);
+              final msgs = ['Khatam-tata-bye-bye 👋', 'Ud gaya! Samajh ja 💨', 'Saboot mitaa diye 🗑️', 'Hoya hi nahi samajh le 🤫'];
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(msgs[Random().nextInt(msgs.length)], style: GoogleFonts.poppins()),
+                  backgroundColor: const Color(0xFF1A1A24),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
+            child: Text(
+              'Hatao! 🗑️',
+              style: GoogleFonts.poppins(
+                color: const Color(0xFFFF6B6B),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final dateFormat = DateFormat('dd MMM');
     final currencyFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0);
     final catColor = _getCategoryColor(expense.category);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1A24),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: catColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: Text(
-                _getCategoryEmoji(expense.category),
-                style: const TextStyle(fontSize: 20),
-              ),
-            ),
+      child: Dismissible(
+        key: Key('all_${expense.remoteId}'),
+        direction: DismissDirection.endToStart,
+        confirmDismiss: (_) async {
+          _showDeleteConfirmation(context, ref);
+          return false;
+        },
+        background: Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 24),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFF6B6B).withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(16),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.delete_rounded, color: Color(0xFFFF6B6B), size: 22),
+              const SizedBox(height: 2),
+              Text('hatao', style: GoogleFonts.poppins(color: const Color(0xFFFF6B6B), fontSize: 9, fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => AddExpenseSheet(expense: expense, index: index),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A1A24),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+            ),
+            child: Row(
               children: [
-                Text(
-                  expense.place.isEmpty || expense.place == 'Unknown'
-                      ? expense.category
-                      : expense.place,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: catColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(
+                      _getCategoryEmoji(expense.category),
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        expense.place.isEmpty || expense.place == 'Unknown'
+                            ? expense.category
+                            : expense.place,
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                      ),
+                      Text(
+                        '${expense.category} • ${dateFormat.format(expense.date)}',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white38,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 Text(
-                  '${expense.category} • ${dateFormat.format(expense.date)}',
+                  '- ${currencyFormat.format(expense.amount)}',
                   style: GoogleFonts.poppins(
-                    color: Colors.white38,
-                    fontSize: 12,
+                    color: const Color(0xFFFF6B6B),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
                   ),
                 ),
               ],
             ),
           ),
-          Text(
-            '- ${currencyFormat.format(expense.amount)}',
-            style: GoogleFonts.poppins(
-              color: const Color(0xFFFF6B6B),
-              fontWeight: FontWeight.w700,
-              fontSize: 16,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -205,3 +356,4 @@ class _FullTransactionItem extends StatelessWidget {
     }
   }
 }
+
