@@ -926,6 +926,8 @@ class _TransactionItem extends ConsumerWidget {
       case 'bills': return '📨';
       case 'entertainment': return '🎬';
       case 'health': return '💊';
+      case 'sports': return '⚽';
+      case 'miscellaneous': return '🏷️';
       default: return '💰';
     }
   }
@@ -938,6 +940,8 @@ class _TransactionItem extends ConsumerWidget {
       case 'bills': return const Color(0xFFFF6B6B);
       case 'entertainment': return const Color(0xFF4ADE80);
       case 'health': return const Color(0xFFFB7185);
+      case 'sports': return const Color(0xFF2DD4BF);
+      case 'miscellaneous': return const Color(0xFF94A3B8);
       default: return const Color(0xFFFF6B35);
     }
   }

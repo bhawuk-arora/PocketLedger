@@ -26,6 +26,9 @@ jobs:
   build:
     name: Build & Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
     
     steps:
       # ─── 1. Checkout Code ──────────────────────────────────────────────
@@ -46,7 +49,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.2'
+          flutter-version: '3.35.7'
           channel: 'stable'
           cache: true
 
@@ -74,8 +77,20 @@ jobs:
             echo "keyAlias=$KEY_ALIAS" >> android/key.properties
             echo "storeFile=release-keystore.jks" >> android/key.properties
           fi
+          
+          # Build split APKs first
           flutter build apk --release --split-per-abi
+          
+          # Temporarily copy split APKs to a safe place so they aren't wiped out by the universal build
+          mkdir -p build/app/outputs/apk_temp
+          cp build/app/outputs/flutter-apk/*.apk build/app/outputs/apk_temp/
+          
+          # Build universal fat APK
           flutter build apk --release
+          
+          # Restore split APKs back to the output directory
+          cp build/app/outputs/apk_temp/*.apk build/app/outputs/flutter-apk/
+          rm -rf build/app/outputs/apk_temp
 
       # ─── 7. Extract Version ───────────────────────────────────────────
       - name: Extract project version

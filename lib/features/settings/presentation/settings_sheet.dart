@@ -210,7 +210,7 @@ class SettingsSheet extends HookConsumerWidget {
                   Switch(
                     value: reminderEnabled.value,
                     onChanged: toggleReminder,
-                    activeColor: const Color(0xFFFF6B35),
+                    activeThumbColor: const Color(0xFFFF6B35),
                     activeTrackColor: const Color(0xFFFF6B35).withValues(alpha: 0.3),
                   ),
                 ],
