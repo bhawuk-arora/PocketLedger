@@ -155,7 +155,11 @@ async function run() {
     // Daily Average
     const dailyAverage = totalWeek1 / 7;
 
-
+    const emojis = {
+      'food': '🍔', 'transport': '🚗', 'shopping': '🛍️',
+      'bills': '📨', 'entertainment': '🎬', 'health': '💊',
+      'sports': '⚽', 'miscellaneous': '🏷️'
+    };
 
     // Format category HTML list with percentages
     const categoryHtmlList = sortedCategories.map(([cat, amount]) => {
