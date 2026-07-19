@@ -1030,7 +1030,7 @@ class _TransactionItem extends ConsumerWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
-              ref.read(expenseRepositoryProvider).deleteExpense(index, expense.remoteId);
+              ref.read(expenseRepositoryProvider).deleteExpense(expense.remoteId);
               final msgs = ['Khatam-tata-bye-bye 👋', 'Ud gaya! Samajh ja 💨', 'Saboot mitaa diye 🗑️', 'Hoya hi nahi samajh le 🤫'];
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

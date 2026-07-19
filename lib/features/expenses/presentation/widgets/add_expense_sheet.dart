@@ -46,7 +46,6 @@ class AddExpenseSheet extends HookConsumerWidget {
 
       if (isEditing) {
         ref.read(expenseRepositoryProvider).updateExpense(
-              index: index!,
               remoteId: expense!.remoteId,
               amount: amount,
               category: category.value,
@@ -335,8 +334,7 @@ class AddExpenseSheet extends HookConsumerWidget {
                           ),
                           TextButton(
                             onPressed: () {
-                              Navigator.pop(ctx);
-                              ref.read(expenseRepositoryProvider).deleteExpense(index!, expense!.remoteId);
+                              ref.read(expenseRepositoryProvider).deleteExpense(expense!.remoteId);
                               Navigator.pop(context);
                             },
                             child: Text('Hatao! 🗑️', style: GoogleFonts.poppins(color: const Color(0xFFFF6B6B), fontWeight: FontWeight.w700)),

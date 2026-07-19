@@ -206,7 +206,6 @@ class ExpenseRepository {
   }
 
   Future<void> updateExpense({
-    required int index,
     required String remoteId,
     required double amount,
     required String category,
@@ -214,16 +213,20 @@ class ExpenseRepository {
     required DateTime date,
     required String notes,
   }) async {
-    final expense = _box.getAt(index);
-    if (expense == null) return;
+    Expense? expense;
+    try {
+      expense = _box.values.firstWhere((e) => e.remoteId == remoteId);
+    } catch (_) {}
 
-    expense.amount = amount;
-    expense.category = category;
-    expense.place = place;
-    expense.date = date;
-    expense.notes = notes;
-    expense.synced = false;
-    await expense.save();
+    if (expense != null) {
+      expense.amount = amount;
+      expense.category = category;
+      expense.place = place;
+      expense.date = date;
+      expense.notes = notes;
+      expense.synced = false;
+      await expense.save();
+    }
 
     try {
       await _supabase.from('expenses').update({
@@ -233,15 +236,21 @@ class ExpenseRepository {
         'date': date.toIso8601String(),
         'notes': notes,
       }).match({'id': remoteId});
-      expense.synced = true;
-      await expense.save();
+      
+      if (expense != null) {
+        expense.synced = true;
+        await expense.save();
+      }
     } catch (_) {
       // Will be retried on next sync
     }
   }
 
-  Future<void> deleteExpense(int localIndex, String remoteId) async {
-    await _box.deleteAt(localIndex);
+  Future<void> deleteExpense(String remoteId) async {
+    try {
+      final expense = _box.values.firstWhere((e) => e.remoteId == remoteId);
+      await expense.delete();
+    } catch (_) {}
     try {
       await _supabase.from('expenses').delete().match({'id': remoteId});
     } catch (_) {}
