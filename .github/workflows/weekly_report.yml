@@ -25,4 +25,5 @@ jobs:
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           TO_EMAIL: ${{ secrets.TO_EMAIL }}
+          USER_ID: ${{ secrets.USER_ID }}
         run: node .github/scripts/weekly_report.js

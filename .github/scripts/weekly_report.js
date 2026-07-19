@@ -4,6 +4,7 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
 const resendApiKey = process.env.RESEND_API_KEY;
 const toEmail = process.env.TO_EMAIL;
+const userId = process.env.USER_ID;
 
 if (!supabaseUrl || !supabaseKey || !resendApiKey || !toEmail) {
   console.error("Missing required environment variables!");
@@ -48,7 +49,11 @@ function makeRequest(url, headers, method, body) {
 async function run() {
   try {
     // Supabase query to get expenses of last 14 days
-    const queryUrl = `${supabaseUrl}/rest/v1/expenses?date=gte.${dateString}&select=*`;
+    let queryUrl = `${supabaseUrl}/rest/v1/expenses?date=gte.${dateString}&select=*`;
+    if (userId) {
+      queryUrl += `&user_id=eq.${userId}`;
+      console.log(`Filtering query for user_id: ${userId}`);
+    }
     const supabaseHeaders = {
       'apikey': supabaseKey,
       'Authorization': `Bearer ${supabaseKey}`,
