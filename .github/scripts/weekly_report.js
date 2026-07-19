@@ -186,6 +186,7 @@ async function sendEmptyReportEmail() {
     console.log("Empty report email sent successfully!");
   } catch (err) {
     console.error("Failed to send empty report email:", err);
+    throw err;
   }
 }
 
