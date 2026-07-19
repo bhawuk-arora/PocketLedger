@@ -9,7 +9,6 @@ import 'package:pocket_ledger/features/expenses/data/models/expense_model.dart';
 import 'package:pocket_ledger/features/expenses/data/repositories/expense_repository.dart';
 import 'package:pocket_ledger/features/expenses/presentation/widgets/add_expense_sheet.dart';
 import 'package:pocket_ledger/features/auth/presentation/auth_notifier.dart';
-import 'package:pocket_ledger/features/settings/presentation/settings_sheet.dart';
 import 'package:pocket_ledger/core/widget_service.dart';
 import 'package:pocket_ledger/features/expenses/presentation/screens/all_transactions_screen.dart';
 import 'package:pocket_ledger/features/expenses/presentation/screens/weekly_report_screen.dart';
@@ -74,6 +73,7 @@ class DashboardScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final expensesAsync = ref.watch(expenseStreamProvider);
     final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
 
     // Update home screen widget when data changes
     ref.listen(expenseStreamProvider, (previous, next) {
@@ -91,12 +91,12 @@ class DashboardScreen extends HookConsumerWidget {
 
           return RefreshIndicator(
             color: const Color(0xFFFF6B35),
-            backgroundColor: const Color(0xFF1A1A24),
+            backgroundColor: theme.colorScheme.surface,
             onRefresh: () async {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Ruk paaji, taaza data la rahe 🔄', style: GoogleFonts.poppins(fontSize: 13)),
-                  backgroundColor: const Color(0xFF1A1A24),
+                  content: Text('Ruk paaji, taaza data la rahe 🔄', style: GoogleFonts.poppins(fontSize: 13, color: onSurface)),
+                  backgroundColor: theme.colorScheme.surface,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   duration: const Duration(seconds: 1),
@@ -148,14 +148,14 @@ class DashboardScreen extends HookConsumerWidget {
                           style: GoogleFonts.poppins(
                             fontSize: 17,
                             fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                            color: onSurface,
                           ),
                         ),
                         Text(
                           'paise da hisaab, Bhawuk da style 🔥',
                           style: GoogleFonts.poppins(
                             fontSize: 9,
-                            color: Colors.white.withValues(alpha: 0.3),
+                            color: onSurface.withValues(alpha: 0.3),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -204,16 +204,6 @@ class DashboardScreen extends HookConsumerWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const WeeklyReportScreen()),
-                      );
-                    },
-                  ),
-                  _GlowButton(
-                    icon: Icons.settings_rounded,
-                    onTap: () {
-                      showModalBottomSheet(
-                        context: context,
-                        backgroundColor: Colors.transparent,
-                        builder: (context) => const SettingsSheet(),
                       );
                     },
                   ),
@@ -486,6 +476,7 @@ class _GlowButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final onSurface = Theme.of(context).colorScheme.onSurface;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -493,11 +484,11 @@ class _GlowButton extends StatelessWidget {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.06),
+          color: onSurface.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
+          border: Border.all(color: onSurface.withValues(alpha: 0.04)),
         ),
-        child: Icon(icon, color: Colors.white.withValues(alpha: 0.45), size: 18),
+        child: Icon(icon, color: onSurface.withValues(alpha: 0.6), size: 18),
       ),
     );
   }
@@ -512,7 +503,7 @@ class _SectionHeader extends StatelessWidget {
     return Text(
       label,
       style: GoogleFonts.poppins(
-        color: Colors.white.withValues(alpha: 0.55),
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
         fontSize: 13,
         fontWeight: FontWeight.w600,
       ),

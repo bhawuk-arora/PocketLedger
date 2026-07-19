@@ -96,8 +96,8 @@ class AuthScreen extends HookConsumerWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Oye kuch galat ho gya: ${authState.error!}',
-                          style: GoogleFonts.poppins(color: const Color(0xFFFF6B6B), fontSize: 12),
+                          _getFriendlyError(authState.error!),
+                          style: GoogleFonts.poppins(color: const Color(0xFFFF6B6B), fontSize: 12, fontWeight: FontWeight.w500),
                         ),
                       ),
                     ],
@@ -212,4 +212,16 @@ class _AuthField extends StatelessWidget {
       ],
     );
   }
+}
+
+String _getFriendlyError(String error) {
+  final err = error.toLowerCase();
+  if (err.contains('invalid login credentials') || err.contains('invalid credentials') || err.contains('not found')) {
+    return 'Galti ho gayi paaji! Email ya Password sahi nahi hai. 🔑';
+  } else if (err.contains('email not confirmed') || err.contains('confirm')) {
+    return 'Oye! Pehle email verify karo, link inbox vich hai! 📨';
+  } else if (err.contains('network') || err.contains('failed host lookup') || err.contains('socket') || err.contains('connection')) {
+    return 'Internet ch nahi chal reha! Connection check karo. 📶';
+  }
+  return 'Oye, kuch ajeeb ho gaya! Server bolya: $error';
 }

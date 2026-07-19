@@ -11,10 +11,23 @@ if (!supabaseUrl || !supabaseKey || !resendApiKey || !toEmail) {
   process.exit(1);
 }
 
-// Fetch past 14 days of expenses to support weekly comparison
-const fourteenDaysAgo = new Date();
-fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
-const dateString = fourteenDaysAgo.toISOString();
+// Calculate query start date dynamically based on input range
+const customStart = process.env.START_DATE;
+const customEnd = process.env.END_DATE;
+
+let dateString;
+if (customStart) {
+  const startObj = new Date(customStart);
+  const endObj = customEnd ? new Date(customEnd) : new Date(startObj.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const durationMs = endObj.getTime() - startObj.getTime();
+  // Fetch from startObj minus durationMs to support comparison
+  const fetchStart = new Date(startObj.getTime() - durationMs);
+  dateString = fetchStart.toISOString();
+} else {
+  const fourteenDaysAgo = new Date();
+  fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+  dateString = fourteenDaysAgo.toISOString();
+}
 
 function makeRequest(url, headers, method, body) {
   return new Promise((resolve, reject) => {
@@ -64,31 +77,41 @@ async function run() {
     const expenses = await makeRequest(queryUrl, supabaseHeaders);
     console.log(`Fetched ${expenses.length} expenses from past 14 days.`);
 
-    const now = new Date();
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(now.getDate() - 7);
+    let startObj, endObj;
+    if (customStart) {
+      startObj = new Date(customStart);
+      endObj = customEnd ? new Date(customEnd) : new Date(startObj.getTime() + 7 * 24 * 60 * 60 * 1000);
+    } else {
+      endObj = new Date();
+      startObj = new Date();
+      startObj.setDate(endObj.getDate() - 7);
+    }
+
+    const durationMs = endObj.getTime() - startObj.getTime();
+    const prevStartObj = new Date(startObj.getTime() - durationMs);
+    const prevEndObj = startObj;
 
     // Format Date Range Nice String (e.g. 12 Jul 2026 - 19 Jul 2026)
     const dateOptions = { day: '2-digit', month: 'short', year: 'numeric' };
-    const periodStart = sevenDaysAgo.toLocaleDateString('en-IN', dateOptions);
-    const periodEnd = now.toLocaleDateString('en-IN', dateOptions);
+    const periodStart = startObj.toLocaleDateString('en-IN', dateOptions);
+    const periodEnd = endObj.toLocaleDateString('en-IN', dateOptions);
     const datePeriodString = `${periodStart} - ${periodEnd}`;
 
-    // Split into Week 1 (last 7 days) and Week 2 (previous 7 days)
+    // Split into Current Period (Week 1) and Previous Period (Week 2)
     const week1Expenses = [];
     const week2Expenses = [];
 
     expenses.forEach(exp => {
       const expDate = new Date(exp.date);
-      if (expDate >= sevenDaysAgo) {
+      if (expDate >= startObj && expDate <= endObj) {
         week1Expenses.push(exp);
-      } else {
+      } else if (expDate >= prevStartObj && expDate < prevEndObj) {
         week2Expenses.push(exp);
       }
     });
 
     if (week1Expenses.length === 0) {
-      console.log("No expenses recorded in the last 7 days!");
+      console.log(`No expenses recorded in the selected period: ${datePeriodString}!`);
       await sendEmptyReportEmail(datePeriodString);
       return;
     }
@@ -153,7 +176,9 @@ async function run() {
     }
 
     // Daily Average
-    const dailyAverage = totalWeek1 / 7;
+    const durationDays = Math.max(1, Math.round(durationMs / (24 * 60 * 60 * 1000)));
+    const dailyAverage = totalWeek1 / durationDays;
+
 
     const emojis = {
       'food': '🍔', 'transport': '🚗', 'shopping': '🛍️',

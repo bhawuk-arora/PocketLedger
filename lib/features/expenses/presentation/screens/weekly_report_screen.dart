@@ -73,15 +73,20 @@ class WeeklyReportScreen extends HookConsumerWidget {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          backgroundColor: const Color(0xFF1A1A24),
+          backgroundColor: Theme.of(ctx).colorScheme.surface,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
             'API Key Labhdi Nahi! 🚨',
-            style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),
+            style: GoogleFonts.poppins(
+              color: Theme.of(ctx).colorScheme.onSurface,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           content: Text(
             'Paaji, lib/core/constants.dart ch RESEND_API_KEY set karo pehlan email bhejran waste!',
-            style: GoogleFonts.poppins(color: Colors.white60),
+            style: GoogleFonts.poppins(
+              color: Theme.of(ctx).colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
           ),
           actions: [
             TextButton(
