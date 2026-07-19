@@ -12,6 +12,7 @@ import 'package:pocket_ledger/features/auth/presentation/auth_notifier.dart';
 import 'package:pocket_ledger/features/settings/presentation/settings_sheet.dart';
 import 'package:pocket_ledger/core/widget_service.dart';
 import 'package:pocket_ledger/features/expenses/presentation/screens/all_transactions_screen.dart';
+import 'package:pocket_ledger/features/expenses/presentation/screens/weekly_report_screen.dart';
 
 // ─── Cheeky Copy ─────────────────────────────────────────────────────────────
 
@@ -195,6 +196,15 @@ class DashboardScreen extends HookConsumerWidget {
                           ),
                         );
                       }
+                    },
+                  ),
+                  _GlowButton(
+                    icon: Icons.assessment_rounded,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const WeeklyReportScreen()),
+                      );
                     },
                   ),
                   _GlowButton(
