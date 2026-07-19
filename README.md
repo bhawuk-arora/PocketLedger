@@ -2,7 +2,7 @@
 
 **"Oye! Paise da hisaab, Bhawuk da style!"**
 
-Welcome to **Bhawuk's Personal Expense Tracker** (aka *Bhawuk's Kharcha*). This is a cute, high-energy, and slightly dramatic fintech app built to stop Bhawuk from spending all his rupees on butter chicken and impulse gaming gear. 🚀
+Welcome to **Bhawuk's Personal Expense Tracker** (aka *Bhawuk's Kharcha*). This is a cute, high-energy, and slightly dramatic fintech app built to stop Bhawuk from spending all his rupees on rajma chawal and impulse gaming gear. 🚀
 
 ---
 
