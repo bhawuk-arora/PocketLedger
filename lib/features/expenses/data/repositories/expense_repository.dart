@@ -34,17 +34,12 @@ class ExpenseRepository {
     if (user != null) {
       final controller = StreamController<List<Expense>>();
 
-      // Real-time Supabase listener
-      final channel = _supabase.channel('expenses_rt_${user.id}')
+      // Real-time Supabase listener (cumulative for all entries)
+      final channel = _supabase.channel('expenses_rt')
         .onPostgresChanges(
           event: sb.PostgresChangeEvent.all,
           schema: 'public',
           table: 'expenses',
-          filter: sb.PostgresChangeFilter(
-            type: sb.PostgresChangeFilterType.eq,
-            column: 'user_id',
-            value: user.id,
-          ),
           callback: (payload) async {
             await nuclearSync();
             if (!controller.isClosed) {
@@ -83,11 +78,10 @@ class ExpenseRepository {
       // 1. Push any unsynced local entries to Supabase first
       await _pushUnsyncedEntries();
 
-      // 2. Fetch ALL remote records (this is the single source of truth)
+      // 2. Fetch ALL remote records (cumulative across all users)
       final List<dynamic> data = await _supabase
           .from('expenses')
-          .select()
-          .eq('user_id', user.id);
+          .select();
 
       // 3. Build the authoritative set from Supabase
       final remoteExpenses = <String, Expense>{};

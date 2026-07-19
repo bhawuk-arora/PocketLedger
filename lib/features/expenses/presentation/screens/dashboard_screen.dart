@@ -511,6 +511,8 @@ class _SectionHeader extends StatelessWidget {
 }
 
 final expenseStreamProvider = StreamProvider<List<Expense>>((ref) {
+  // Watch authProvider so the stream is recreated when auth state changes (e.g. login)
+  ref.watch(authProvider);
   return ref.watch(expenseRepositoryProvider).watchExpenses();
 });
 
