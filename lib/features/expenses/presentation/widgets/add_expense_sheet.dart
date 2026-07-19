@@ -20,6 +20,7 @@ class AddExpenseSheet extends HookConsumerWidget {
     final notesController = useTextEditingController(text: isEditing ? expense!.notes : '');
     final date = useState(isEditing ? expense!.date : DateTime.now());
     final category = useState(isEditing ? expense!.category : 'Food');
+    final isSaving = useState(false);
 
     final categories = [
       {'name': 'Food', 'emoji': '🍔'},
@@ -28,14 +29,23 @@ class AddExpenseSheet extends HookConsumerWidget {
       {'name': 'Bills', 'emoji': '📨'},
       {'name': 'Entertainment', 'emoji': '🎬'},
       {'name': 'Health', 'emoji': '💊'},
+      {'name': 'Sports', 'emoji': '⚽'},
+      {'name': 'Miscellaneous', 'emoji': '🏷️'},
     ];
 
-    void handleSave() async {
+    void handleSave() {
+      if (isSaving.value) return;
+
       final amount = double.tryParse(amountController.text);
       if (amount == null || amount <= 0) return;
 
+      isSaving.value = true;
+
+      // Pop the sheet immediately to avoid UI lag and multiple taps
+      Navigator.pop(context);
+
       if (isEditing) {
-        await ref.read(expenseRepositoryProvider).updateExpense(
+        ref.read(expenseRepositoryProvider).updateExpense(
               index: index!,
               remoteId: expense!.remoteId,
               amount: amount,
@@ -45,7 +55,7 @@ class AddExpenseSheet extends HookConsumerWidget {
               notes: notesController.text,
             );
       } else {
-        await ref.read(expenseRepositoryProvider).addExpense(
+        ref.read(expenseRepositoryProvider).addExpense(
               amount: amount,
               category: category.value,
               place: placeController.text.isEmpty ? 'Unknown' : placeController.text,
@@ -53,8 +63,6 @@ class AddExpenseSheet extends HookConsumerWidget {
               notes: notesController.text,
             );
       }
-
-      if (context.mounted) Navigator.pop(context);
     }
 
     return Container(
