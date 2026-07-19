@@ -27,27 +27,5 @@ Because spreadsheets are boring, and writing down *“₹500 - golgappe”* in a
 *   **Nuclear Sync ⚛️:** Automatically syncs with Supabase database when online. Offline? Hive stores it locally like a good friend.
 *   **Punjabi Alerts 🔔:** Gets notifications like *"Oye Bhawuk! Aaj ka kharcha daala ki nahi? 🧐"*
 
----
-
-## 🛠️ How to run this "Jugaad"
-
-1.  **Get dependencies:**
-    ```bash
-    flutter pub get
-    ```
-2.  **Run it:**
-    ```bash
-    flutter run
-    ```
-
----
-
-## 📦 Building your own APK
-
-To package this app into a super lightweight (~20MB) installable package for Android:
-
-```bash
-flutter build apk --release --split-per-abi
-```
 
 *Made with ☕, 🎮, and questionable financial choices by Bhawuk. 🫡*
