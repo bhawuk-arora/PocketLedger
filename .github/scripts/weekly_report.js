@@ -179,6 +179,7 @@ async function run() {
     const durationDays = Math.max(1, Math.round(durationMs / (24 * 60 * 60 * 1000)));
     const dailyAverage = totalWeek1 / durationDays;
 
+
     const emojis = {
       'food': '🍔', 'transport': '🚗', 'shopping': '🛍️',
       'bills': '📨', 'entertainment': '🎬', 'health': '💊',
