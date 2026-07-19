@@ -150,7 +150,7 @@ async function run() {
     };
 
     const emailResponse = await makeRequest('https://api.resend.com/emails', resendHeaders, 'POST', {
-      from: "PocketLedger <onboarding@resend.dev>",
+      from: "PocketLedger <reports@ledger-reports.bhawukarora.app>",
       to: [toEmail],
       subject: `🦁 Weekly Damage: ₹${totalDamage.toFixed(0)} (${cheekTitle})`,
       html: htmlBody
@@ -171,7 +171,7 @@ async function sendEmptyReportEmail() {
       'Content-Type': 'application/json'
     };
     await makeRequest('https://api.resend.com/emails', resendHeaders, 'POST', {
-      from: "PocketLedger <onboarding@resend.dev>",
+      from: "PocketLedger <reports@ledger-reports.bhawukarora.app>",
       to: [toEmail],
       subject: "🦁 Weekly Damage: ₹0 (Waah!)",
       html: `
