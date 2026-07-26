@@ -19,17 +19,18 @@ class AddExpenseSheet extends HookConsumerWidget {
     final placeController = useTextEditingController(text: isEditing ? expense!.place : '');
     final notesController = useTextEditingController(text: isEditing ? expense!.notes : '');
     final date = useState(isEditing ? expense!.date : DateTime.now());
-    final category = useState(isEditing ? expense!.category : 'Food');
+    final category = useState(isEditing ? expense!.category : 'Groceries');
     final isSaving = useState(false);
 
-    final categories = [
-      {'name': 'Food', 'emoji': '🍔'},
+final categories = [
+      {'name': 'Groceries', 'emoji': '🛒'},
       {'name': 'Transport', 'emoji': '🚗'},
       {'name': 'Shopping', 'emoji': '🛍️'},
       {'name': 'Bills', 'emoji': '📨'},
       {'name': 'Entertainment', 'emoji': '🎬'},
       {'name': 'Health', 'emoji': '💊'},
       {'name': 'Sports', 'emoji': '⚽'},
+      {'name': 'Investments', 'emoji': '📈'},
       {'name': 'Miscellaneous', 'emoji': '🏷️'},
     ];
 
