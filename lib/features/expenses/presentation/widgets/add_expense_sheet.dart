@@ -24,7 +24,8 @@ class AddExpenseSheet extends HookConsumerWidget {
 
 final categories = [
       {'name': 'Groceries', 'emoji': '🛒'},
-      {'name': 'Transport', 'emoji': '🚗'},
+      {'name': 'Commute', 'emoji': '🚌'},
+      {'name': 'Travel', 'emoji': '🚂'},
       {'name': 'Shopping', 'emoji': '🛍️'},
       {'name': 'Bills', 'emoji': '📨'},
       {'name': 'Entertainment', 'emoji': '🎬'},

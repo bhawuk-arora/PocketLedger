@@ -925,7 +925,8 @@ class _TransactionItem extends ConsumerWidget {
   String _getCategoryEmoji(String category) {
     switch (category.toLowerCase()) {
       case 'groceries': return '🛒';
-      case 'transport': return '🚗';
+      case 'commute': return '🚌';
+      case 'travel': return '🚂';
       case 'shopping': return '🛍️';
       case 'bills': return '📨';
       case 'entertainment': return '🎬';
@@ -940,7 +941,8 @@ class _TransactionItem extends ConsumerWidget {
   Color _getCategoryColor(String category) {
     switch (category.toLowerCase()) {
       case 'groceries': return const Color(0xFFFFD166);
-      case 'transport': return const Color(0xFF38BDF8);
+      case 'commute': return const Color(0xFF38BDF8);
+      case 'travel': return const Color(0xFF06B6D4);
       case 'shopping': return const Color(0xFFC084FC);
       case 'bills': return const Color(0xFFFF6B6B);
       case 'entertainment': return const Color(0xFF4ADE80);

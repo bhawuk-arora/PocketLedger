@@ -18,7 +18,7 @@ class WeeklyReportScreen extends HookConsumerWidget {
   String _getCategoryEmoji(String category) {
     switch (category.toLowerCase()) {
       case 'groceries': return '🛒';
-      case 'transport': return '🚗';
+      case 'travel': return '🚂';
       case 'shopping': return '🛍️';
       case 'bills': return '📨';
       case 'entertainment': return '🎬';
@@ -33,7 +33,7 @@ class WeeklyReportScreen extends HookConsumerWidget {
   Color _getCategoryColor(String category) {
     switch (category.toLowerCase()) {
       case 'groceries': return const Color(0xFFFFD166);
-      case 'transport': return const Color(0xFF38BDF8);
+      case 'travel': return const Color(0xFF38BDF8);
       case 'shopping': return const Color(0xFFC084FC);
       case 'bills': return const Color(0xFFFF6B6B);
       case 'entertainment': return const Color(0xFF4ADE80);
