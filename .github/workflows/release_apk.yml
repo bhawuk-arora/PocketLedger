@@ -26,6 +26,9 @@ jobs:
   build:
     name: Build APKs
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./pocketledger-frontend
     
     steps:
       - name: Checkout repository
@@ -102,7 +105,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-apks
-          path: build/app/outputs/flutter-apk/*.apk
+          path: pocketledger-frontend/build/app/outputs/flutter-apk/*.apk
           retention-days: 7
 
       - name: Pass metadata to release job

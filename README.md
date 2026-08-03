@@ -1,31 +1,38 @@
-# Bhawuk's Personal Expense Tracker 💸🦁
+# PocketLedger Monorepo
 
-**"Oye! Paise da hisaab, Bhawuk da style!"**
+Welcome to the **PocketLedger** repository. This is a monorepo containing both the Flutter mobile application and the FastAPI backend service.
 
-Welcome to **Bhawuk's Personal Expense Tracker** (aka *Bhawuk's Kharcha*). This is a cute, high-energy, and slightly dramatic fintech app built to stop Bhawuk from spending all his rupees on rajma chawal and impulse gaming gear. 🚀
+## 🏗️ Repository Structure
+
+```
+PocketLedger/
+├── pocketledger-frontend/  # Flutter Mobile App
+├── pocketledger-backend/   # FastAPI Backend Service
+├── docs/                   # Architecture diagrams & SQL Migrations
+└── .github/                # GitHub Actions CI/CD workflows
+```
 
 ---
 
-## 🦄 Why does this exist?
-Because spreadsheets are boring, and writing down *“₹500 - golgappe”* in a paper diary is very 1999. Bhawuk needs a sleek dark UI, custom Punjabi reminders, and zero lag to keep his financial life together.
+### 📱 1. pocketledger-frontend (Flutter)
+The mobile application built with Flutter and Riverpod. 
+- **Tech:** Flutter, Riverpod, Supabase SDK
+- **Features:** Expense tracking, monthly analysis, workspace switching, offline-first syncing.
+- **Docs:** Read the [Frontend README](./pocketledger-frontend/README.md) for setup and build instructions.
+
+### ⚙️ 2. pocketledger-backend (FastAPI)
+The backend service that handles business logic separated from the client.
+- **Tech:** Python, FastAPI, Supabase REST API, Resend
+- **Features:** Secure email reports, multi-tenant workspace enforcement, automated summaries.
+- **Docs:** Read the [Backend README](./pocketledger-backend/README.md) for setup and deployment instructions.
+
+### 🗄️ 3. docs (Architecture & Database)
+Contains the single source of truth for our database architecture.
+- **SQL Migrations:** Strict, versioned SQL migrations in [`docs/migrations/`](./docs/migrations/). Never edit old migrations, always create new ones.
+- **Architecture:** ERD diagrams and RLS policies in [`docs/architecture/`](./docs/architecture/).
 
 ---
 
-## ✨ Features (Pocket-Sized & Powerful)
-
-*   **Zero-Lag Logger ⚡:** Tap "Daal De Paaji" and the screen vanishes instantly! No waiting for the database to reply while you stand awkwardly at the cashier.
-*   **Double-Tap Shield 🛡️:** Buttons disable instantly so you don't log your daily tea cost 5 times.
-*   **Vibrant Categories 🏷️:**
-    *   🍔 *Food* (Obviously)
-    *   🚗 *Transport* (When walking is not an option)
-    *   🛍️ *Shopping* (Impulse decisions)
-    *   📨 *Bills* (The sad adult stuff)
-    *   🎬 *Entertainment* (Movies & chill)
-    *   💊 *Health* (Gym & multivitamin hype)
-    *   ⚽ *Sports* (For cricket bats and gym memberships)
-    *   🏷️ *Miscellaneous* (For stuff that makes you say *"ye kahaan gaya?"*)
-*   **Nuclear Sync ⚛️:** Automatically syncs with Supabase database when online. Offline? Hive stores it locally like a good friend.
-*   **Punjabi Alerts 🔔:** Gets notifications like *"Oye Bhawuk! Aaj ka kharcha daala ki nahi? 🧐"*
-
-
-*Made with ☕, 🎮, and questionable financial choices by Bhawuk. 🫡*
+## 🚀 CI/CD Pipelines
+This repository uses GitHub Actions for automated builds.
+- **Release APK:** Triggers on `v*` tags or manual dispatch. It builds the Flutter app located in `pocketledger-frontend` and attaches the APKs to a GitHub Release.
