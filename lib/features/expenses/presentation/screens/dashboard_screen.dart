@@ -12,6 +12,7 @@ import 'package:pocket_ledger/features/auth/presentation/auth_notifier.dart';
 import 'package:pocket_ledger/core/widget_service.dart';
 import 'package:pocket_ledger/features/expenses/presentation/screens/all_transactions_screen.dart';
 import 'package:pocket_ledger/features/expenses/presentation/screens/monthly_analysis_screen.dart';
+import 'package:pocket_ledger/features/workspaces/presentation/workspace_provider.dart';
 
 // ─── Cheeky Copy ─────────────────────────────────────────────────────────────
 
@@ -79,6 +80,9 @@ class DashboardScreen extends HookConsumerWidget {
     ref.listen(expenseStreamProvider, (previous, next) {
       next.whenData((expenses) => WidgetService.updateWidget(expenses));
     });
+
+    final activeWorkspace = ref.watch(workspaceProvider);
+    final userCompaniesAsync = ref.watch(userCompaniesProvider);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -164,8 +168,72 @@ class DashboardScreen extends HookConsumerWidget {
                   ],
                 ),
                 actions: [
+                  // ─── Workspace Switcher Chip ─────────────────────────────
+                  userCompaniesAsync.when(
+                    data: (companies) {
+                      if (companies.isEmpty) return const SizedBox();
+                      final active = activeWorkspace ?? companies.first['id'];
+                      final activeName = (companies.firstWhere(
+                        (c) => c['id'] == active,
+                        orElse: () => companies.first,
+                      )['name'] ?? 'Personal') as String;
+                      return GestureDetector(
+                        onTap: () => showModalBottomSheet(
+                          context: context,
+                          backgroundColor: const Color(0xFF1E1E2C),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                          ),
+                          builder: (ctx) => Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Switch Workspace', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18)),
+                                const SizedBox(height: 16),
+                                ...companies.map((c) {
+                                  final isActive = c['id'] == active;
+                                  return ListTile(
+                                    onTap: () {
+                                      ref.read(workspaceProvider.notifier).setActiveWorkspace(c['id']);
+                                      Navigator.pop(ctx);
+                                    },
+                                    leading: Icon(Icons.business_rounded, color: isActive ? const Color(0xFFFF6B35) : Colors.white54),
+                                    title: Text(c['name'], style: GoogleFonts.poppins(color: Colors.white, fontWeight: isActive ? FontWeight.w700 : FontWeight.w400)),
+                                    trailing: isActive ? const Icon(Icons.check_circle_rounded, color: Color(0xFFFF6B35)) : null,
+                                  );
+                                }),
+                              ],
+                            ),
+                          ),
+                        ),
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF6B35).withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: const Color(0xFFFF6B35).withValues(alpha: 0.4)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.business_rounded, color: Color(0xFFFF6B35), size: 14),
+                              const SizedBox(width: 4),
+                              Text(activeName, style: GoogleFonts.poppins(color: const Color(0xFFFF6B35), fontSize: 11, fontWeight: FontWeight.w600)),
+                              const Icon(Icons.expand_more_rounded, color: Color(0xFFFF6B35), size: 14),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                    loading: () => const SizedBox(),
+                    error: (_, __) => const SizedBox(),
+                  ),
                   _GlowButton(
                     icon: Icons.sync_rounded,
+
                     onTap: () async {
                       // Show cheeky overlay loader
                       showDialog(

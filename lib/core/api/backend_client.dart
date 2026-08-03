@@ -9,6 +9,7 @@ class BackendClient {
   BackendClient._internal();
 
   final String _baseUrl = AppConstants.backendUrl;
+  String? activeCompanyId;
 
   Future<String?> _getToken() async {
     final session = Supabase.instance.client.auth.currentSession;
@@ -20,10 +21,14 @@ class BackendClient {
     if (token == null) {
       throw Exception('User is not authenticated');
     }
-    return {
+    final headers = {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
     };
+    if (activeCompanyId != null) {
+      headers['X-Company-ID'] = activeCompanyId!;
+    }
+    return headers;
   }
 
   Future<dynamic> get(String endpoint, {Map<String, dynamic>? queryParameters}) async {
