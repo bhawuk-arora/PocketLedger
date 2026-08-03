@@ -14,6 +14,8 @@ __pycache__/
 
 # Node/Frontend root tools (if any)
 node_modules/
+build
+.dart_tool/
 
 # Flutter (Frontend)
 # (The flutter specific ignores are in pocketledger-frontend/.gitignore)
