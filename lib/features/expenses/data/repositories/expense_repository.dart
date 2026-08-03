@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pocket_ledger/features/expenses/data/models/expense_model.dart';
 import 'package:pocket_ledger/main.dart';
 import 'package:uuid/uuid.dart';
+import 'package:pocket_ledger/core/api/backend_client.dart';
 
 final expenseRepositoryProvider = Provider((ref) {
   final box = ref.watch(expenseBoxProvider);
@@ -84,10 +85,10 @@ class ExpenseRepository {
       await _pushUnsyncedEntries();
 
       // 2. Fetch ALL remote records (this is the single source of truth)
-      final List<dynamic> data = await _supabase
-          .from('expenses')
-          .select()
-          .eq('user_id', user.id);
+      // We pass limit 1000 or similar since we are syncing locally for offline first.
+      // But actually, we should probably fetch everything. For now, the endpoint defaults to 30.
+      // Let's pass limit=10000 for nuclear sync
+      final List<dynamic> data = await backendClient.get('/api/transactions', queryParameters: {'limit': 10000});
 
       // 3. Build the authoritative set from Supabase
       final remoteExpenses = <String, Expense>{};
@@ -144,7 +145,7 @@ class ExpenseRepository {
     final unsynced = _box.values.where((e) => !e.synced).toList();
     for (final expense in unsynced) {
       try {
-        await _supabase.from('expenses').upsert({
+        await backendClient.post('/api/transactions', body: {
           'id': expense.remoteId,
           'user_id': expense.userId,
           'amount': expense.amount,
@@ -189,7 +190,7 @@ class ExpenseRepository {
     await _box.add(expense);
 
     try {
-      await _supabase.from('expenses').insert({
+      await backendClient.post('/api/transactions', body: {
         'id': remoteId,
         'user_id': user.id,
         'amount': amount,
@@ -229,13 +230,13 @@ class ExpenseRepository {
     }
 
     try {
-      await _supabase.from('expenses').update({
+      await backendClient.put('/api/transactions/$remoteId', body: {
         'amount': amount,
         'category': category,
         'place': place,
         'date': date.toIso8601String(),
         'notes': notes,
-      }).match({'id': remoteId});
+      });
       
       if (expense != null) {
         expense.synced = true;
@@ -252,7 +253,7 @@ class ExpenseRepository {
       await expense.delete();
     } catch (_) {}
     try {
-      await _supabase.from('expenses').delete().match({'id': remoteId});
+      await backendClient.delete('/api/transactions/$remoteId');
     } catch (_) {}
   }
 
