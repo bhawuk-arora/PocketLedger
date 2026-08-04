@@ -18,12 +18,13 @@ PocketLedger/
 The mobile application built with Flutter and Riverpod. 
 - **Tech:** Flutter, Riverpod, Supabase SDK
 - **Features:** Expense tracking, monthly analysis, workspace switching, offline-first syncing.
+- **Config:** Dynamic backend URL injection via `--dart-define=BACKEND_URL=...`
 - **Docs:** Read the [Frontend README](./pocketledger-frontend/README.md) for setup and build instructions.
 
 ### ⚙️ 2. pocketledger-backend (FastAPI)
 The backend service that handles business logic separated from the client.
 - **Tech:** Python, FastAPI, Supabase REST API, Resend
-- **Features:** Secure email reports, multi-tenant workspace enforcement, automated summaries.
+- **Features:** Full CRUD API for transactions (GET, POST, PUT, DELETE), secure email reports, multi-tenant workspace enforcement, automated summaries.
 - **Docs:** Read the [Backend README](./pocketledger-backend/README.md) for setup and deployment instructions.
 
 ### 🗄️ 3. docs (Architecture & Database)
