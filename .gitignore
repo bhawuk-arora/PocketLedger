@@ -19,3 +19,7 @@ build
 
 # Flutter (Frontend)
 # (The flutter specific ignores are in pocketledger-frontend/.gitignore)
+.flutter-plugins
+.flutter-plugins-dependencies
+pocketledger-frontend/.flutter-plugins
+pocketledger-frontend/.flutter-plugins-dependencies
