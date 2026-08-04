@@ -31,6 +31,7 @@ The backend service that handles business logic separated from the client.
 Contains the single source of truth for our database architecture.
 - **SQL Migrations:** Strict, versioned SQL migrations in [`docs/migrations/`](./docs/migrations/). Never edit old migrations, always create new ones.
 - **Architecture:** ERD diagrams and RLS policies in [`docs/architecture/`](./docs/architecture/).
+- **Design Decisions:** Trade-off analysis on architectural patterns in [`docs/architecture/design_decisions.md`](./docs/architecture/design_decisions.md).
 
 ---
 
