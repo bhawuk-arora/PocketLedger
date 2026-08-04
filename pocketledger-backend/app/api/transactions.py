@@ -61,3 +61,38 @@ async def create_transaction(
         raise HTTPException(status_code=response.status_code, detail=response.text)
         
     return response.json()
+
+@router.put("/{transaction_id}")
+async def update_transaction(
+    transaction_id: str,
+    expense: ExpenseUpdate,
+    client: httpx.AsyncClient = Depends(get_supabase_client),
+    company_id: str | None = Depends(get_company_id)
+):
+    if not company_id:
+        raise HTTPException(status_code=400, detail="X-Company-ID header is required")
+        
+    url = f"/expenses?id=eq.{transaction_id}&company_id=eq.{company_id}"
+    update_data = {k: v for k, v in expense.dict().items() if v is not None}
+    
+    response = await client.patch(url, json=update_data)
+    if response.status_code >= 400:
+        raise HTTPException(status_code=response.status_code, detail=response.text)
+        
+    return response.json()
+
+@router.delete("/{transaction_id}")
+async def delete_transaction(
+    transaction_id: str,
+    client: httpx.AsyncClient = Depends(get_supabase_client),
+    company_id: str | None = Depends(get_company_id)
+):
+    if not company_id:
+        raise HTTPException(status_code=400, detail="X-Company-ID header is required")
+        
+    url = f"/expenses?id=eq.{transaction_id}&company_id=eq.{company_id}"
+    response = await client.delete(url)
+    if response.status_code >= 400:
+        raise HTTPException(status_code=response.status_code, detail=response.text)
+        
+    return {"status": "success"}
