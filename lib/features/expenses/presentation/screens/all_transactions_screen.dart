@@ -176,7 +176,7 @@ class _FullTransactionItem extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Ye wapis nahi aayega, pakka delete?',
+              'This action cannot be undone.',
               style: GoogleFonts.poppins(
                 color: Colors.white.withValues(alpha: 0.4),
                 fontSize: 12,
@@ -188,7 +188,7 @@ class _FullTransactionItem extends ConsumerWidget {
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
-              'Rehne de',
+              'Cancel',
               style: GoogleFonts.poppins(
                 color: Colors.white.withValues(alpha: 0.5),
                 fontWeight: FontWeight.w600,
@@ -250,7 +250,7 @@ class _FullTransactionItem extends ConsumerWidget {
             children: [
               const Icon(Icons.delete_rounded, color: Color(0xFFFF6B6B), size: 22),
               const SizedBox(height: 2),
-              Text('hatao', style: GoogleFonts.poppins(color: const Color(0xFFFF6B6B), fontSize: 9, fontWeight: FontWeight.w600)),
+              Text('delete', style: GoogleFonts.poppins(color: const Color(0xFFFF6B6B), fontSize: 9, fontWeight: FontWeight.w600)),
             ],
           ),
         ),
@@ -330,7 +330,9 @@ class _FullTransactionItem extends ConsumerWidget {
 
   String _getCategoryEmoji(String category) {
     switch (category.toLowerCase()) {
+      case 'food & groceries':
       case 'groceries': return '🛒';
+      case 'commute': return '🚌';
       case 'travel': return '🚂';
       case 'shopping': return '🛍️';
       case 'bills': return '📨';
@@ -345,8 +347,10 @@ class _FullTransactionItem extends ConsumerWidget {
 
   Color _getCategoryColor(String category) {
     switch (category.toLowerCase()) {
+      case 'food & groceries':
       case 'groceries': return const Color(0xFFFFD166);
-      case 'travel': return const Color(0xFF38BDF8);
+      case 'commute': return const Color(0xFF38BDF8);
+      case 'travel': return const Color(0xFF06B6D4);
       case 'shopping': return const Color(0xFFC084FC);
       case 'bills': return const Color(0xFFFF6B6B);
       case 'entertainment': return const Color(0xFF4ADE80);

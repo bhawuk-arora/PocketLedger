@@ -17,7 +17,9 @@ class WeeklyReportScreen extends HookConsumerWidget {
 
   String _getCategoryEmoji(String category) {
     switch (category.toLowerCase()) {
+      case 'food & groceries':
       case 'groceries': return '🛒';
+      case 'commute': return '🚌';
       case 'travel': return '🚂';
       case 'shopping': return '🛍️';
       case 'bills': return '📨';
@@ -32,8 +34,10 @@ class WeeklyReportScreen extends HookConsumerWidget {
 
   Color _getCategoryColor(String category) {
     switch (category.toLowerCase()) {
+      case 'food & groceries':
       case 'groceries': return const Color(0xFFFFD166);
-      case 'travel': return const Color(0xFF38BDF8);
+      case 'commute': return const Color(0xFF38BDF8);
+      case 'travel': return const Color(0xFF06B6D4);
       case 'shopping': return const Color(0xFFC084FC);
       case 'bills': return const Color(0xFFFF6B6B);
       case 'entertainment': return const Color(0xFF4ADE80);
@@ -64,7 +68,7 @@ class WeeklyReportScreen extends HookConsumerWidget {
     if (toEmail == null) {
       scaffoldMessenger.showSnackBar(
         SnackBar(
-          content: Text('Pehle login karo paaji! 🚨', style: GoogleFonts.poppins()),
+          content: Text('Please login first!', style: GoogleFonts.poppins()),
           backgroundColor: const Color(0xFFFF6B6B),
         ),
       );
@@ -78,14 +82,14 @@ class WeeklyReportScreen extends HookConsumerWidget {
           backgroundColor: Theme.of(ctx).colorScheme.surface,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
-            'API Key Labhdi Nahi! 🚨',
+            'API Key Missing',
             style: GoogleFonts.poppins(
               color: Theme.of(ctx).colorScheme.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
           content: Text(
-            'Paaji, lib/core/constants.dart ch RESEND_API_KEY set karo pehlan email bhejran waste!',
+            'Please configure RESEND_API_KEY in lib/core/constants.dart',
             style: GoogleFonts.poppins(
               color: Theme.of(ctx).colorScheme.onSurface.withValues(alpha: 0.6),
             ),
@@ -93,7 +97,7 @@ class WeeklyReportScreen extends HookConsumerWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text('Samajh gaya 👍', style: GoogleFonts.poppins(color: const Color(0xFFFF6B35))),
+              child: Text('Understood', style: GoogleFonts.poppins(color: const Color(0xFFFF6B35))),
             ),
           ],
         ),
@@ -114,7 +118,7 @@ class WeeklyReportScreen extends HookConsumerWidget {
               CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF6B35))),
               SizedBox(height: 16),
               Text(
-                'Saboot bhej rahe haan, wait karo... 📧🔄',
+                'Sending report...',
                 style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
               )
             ],
@@ -230,7 +234,7 @@ class WeeklyReportScreen extends HookConsumerWidget {
       if (isSuccess) {
         scaffoldMessenger.showSnackBar(
           SnackBar(
-            content: Text('Saboot bhej ditte paaji! Mail check karo! 📧🎉', style: GoogleFonts.poppins()),
+            content: Text('Report sent! Please check your email.', style: GoogleFonts.poppins()),
             backgroundColor: const Color(0xFF4ADE80),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -264,7 +268,7 @@ class WeeklyReportScreen extends HookConsumerWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Damage Analysis 📊',
+          'Expense Analysis 📊',
           style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
@@ -459,7 +463,7 @@ class WeeklyReportScreen extends HookConsumerWidget {
                       child: Column(
                         children: [
                           Text(
-                            'TOTAL DAMAGE 💥',
+                            'TOTAL EXPENSES',
                             style: GoogleFonts.poppins(
                               color: Colors.white30,
                               fontSize: 11,
@@ -558,7 +562,7 @@ class WeeklyReportScreen extends HookConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('WADDI CHOT 💥', style: GoogleFonts.poppins(color: Colors.white30, fontSize: 10, fontWeight: FontWeight.bold)),
+                                Text('BIGGEST SPEND 💥', style: GoogleFonts.poppins(color: Colors.white30, fontSize: 10, fontWeight: FontWeight.bold)),
                                 const SizedBox(height: 6),
                                 Text(
                                   biggest != null ? '₹${biggest.amount.toStringAsFixed(0)}' : '₹0',
@@ -577,7 +581,7 @@ class WeeklyReportScreen extends HookConsumerWidget {
 
                     // Category Breakdown Header
                     Text(
-                      'KIS TYPE DA KHARCHA 🤔',
+                      'SPENDING BY CATEGORY 📊',
                       style: GoogleFonts.poppins(color: Colors.white30, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1),
                     ),
 
@@ -589,7 +593,7 @@ class WeeklyReportScreen extends HookConsumerWidget {
                         padding: const EdgeInsets.symmetric(vertical: 24.0),
                         child: Center(
                           child: Text(
-                            'Koyi kharcha nahi labhya paaji! 💸',
+                            'No transactions found.',
                             style: GoogleFonts.poppins(color: Colors.white30, fontSize: 13),
                           ),
                         ),

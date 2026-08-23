@@ -15,53 +15,22 @@ import 'package:pocket_ledger/features/expenses/presentation/screens/weekly_repo
 
 // ─── Cheeky Copy ─────────────────────────────────────────────────────────────
 
-String _getCheekyGreeting() {
+String _getGreeting() {
   final hour = DateTime.now().hour;
-  final greetings = <String>[];
-  if (hour < 12) {
-    greetings.addAll([
-      'Kiddan paaji, subah subah kharcha? ☕',
-      'Sat Sri Akaal! Aaj ki udaana hai? 🌅',
-      'Savere savere wallet khali? Waah! 💪',
-      'Utth paaji, paise udaane da time ⏰',
-    ]);
-  } else if (hour < 17) {
-    greetings.addAll([
-      'Lunch time = kharcha time 🍕',
-      'Kiddan? Dopahir da hisaab laga 📋',
-      'Oye Bhawuk, aaj kithe udaaye? 🤔',
-      'Wallet ro rha hai tere peeche 😭',
-    ]);
-  } else {
-    greetings.addAll([
-      'Shaam ho gayi, hisaab laga paaji 🌙',
-      'Raat nu soch kitthe gaye paise 🦉',
-      'Dinner kha ke check kar le damage 🍽️',
-      'Bhai, aaj ka kharcha toh dekh le 💸',
-    ]);
-  }
-  return greetings[Random().nextInt(greetings.length)];
+  if (hour < 12) return 'Good Morning ☀️';
+  if (hour < 17) return 'Good Afternoon 🌤️';
+  return 'Good Evening 🌙';
 }
 
-String _getBalanceReaction(double total) {
-  if (total == 0) return 'Changa hai, koi kharcha nahi 😏';
-  if (total < 500) return 'Chill hai bro 😎';
-  if (total < 2000) return 'Thoda bahut hi hai 🤷';
-  if (total < 5000) return 'Oye hoye! Paisa paani wangoo 🌊';
-  if (total < 10000) return 'Bhaji, sambhal ke! 😰';
-  if (total < 25000) return 'Bappu nu naa dasseen 💀';
-  return 'TUSSI BARBAAD HO GAYE 🔥';
+String _getExpenseStatus(double total) {
+  if (total == 0) return 'No expenses yet';
+  if (total < 2000) return 'On track';
+  if (total < 10000) return 'Moderate spending';
+  return 'High spending';
 }
 
-String _getEmptyStateMsg() {
-  final msgs = [
-    'Koi kharcha nahi? Sach much? 🤨',
-    'Wallet mota hai aaj... sus 🧐',
-    'Bilkul kharcha nahi? Tusi theek ho? 🫠',
-    'Bhawuk ne kuch nahi udaaya?! Kamal ho gya 😱',
-    'Paise bach rahe? Miracle ho gya 🙏',
-  ];
-  return msgs[Random().nextInt(msgs.length)];
+String _getEmptyMessage() {
+  return 'No transactions found.';
 }
 
 // ─── Dashboard ───────────────────────────────────────────────────────────────
@@ -85,8 +54,9 @@ class DashboardScreen extends HookConsumerWidget {
       body: expensesAsync.when(
         data: (expenses) {
           final now = DateTime.now();
+          final selectedMonth = useState(DateTime(now.year, now.month));
           final monthExpenses = expenses.where((e) =>
-            e.date.year == now.year && e.date.month == now.month
+            e.date.year == selectedMonth.value.year && e.date.month == selectedMonth.value.month
           ).toList();
 
           return RefreshIndicator(
@@ -95,7 +65,7 @@ class DashboardScreen extends HookConsumerWidget {
             onRefresh: () async {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Ruk paaji, taaza data la rahe 🔄', style: GoogleFonts.poppins(fontSize: 13, color: onSurface)),
+                  content: Text('Syncing data... 🔄', style: GoogleFonts.poppins(fontSize: 13, color: onSurface)),
                   backgroundColor: theme.colorScheme.surface,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -144,7 +114,7 @@ class DashboardScreen extends HookConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Bhawuk's Kharcha",
+                          "PocketLedger",
                           style: GoogleFonts.poppins(
                             fontSize: 17,
                             fontWeight: FontWeight.w700,
@@ -152,7 +122,7 @@ class DashboardScreen extends HookConsumerWidget {
                           ),
                         ),
                         Text(
-                          'paise da hisaab, Bhawuk da style 🔥',
+                          'Personal Finance Dashboard',
                           style: GoogleFonts.poppins(
                             fontSize: 9,
                             color: onSurface.withValues(alpha: 0.3),
@@ -173,7 +143,7 @@ class DashboardScreen extends HookConsumerWidget {
                         barrierDismissible: false,
                         builder: (context) => const Scaffold(
                           backgroundColor: Colors.black54,
-                          body: _CheekyLoader(message: 'Theher ja paaji, data sync ho rha 🔄'),
+                          body: _CheekyLoader(message: 'Syncing your data... 🔄'),
                         ),
                       );
 
@@ -188,7 +158,7 @@ class DashboardScreen extends HookConsumerWidget {
                         Navigator.pop(context); // Dismiss loader
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Sab sync ho gaya! ✅', style: GoogleFonts.poppins()),
+                            content: Text('Sync complete! ✅', style: GoogleFonts.poppins()),
                             backgroundColor: const Color(0xFF1A1A24),
                             behavior: SnackBarBehavior.floating,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -198,15 +168,7 @@ class DashboardScreen extends HookConsumerWidget {
                       }
                     },
                   ),
-                  _GlowButton(
-                    icon: Icons.assessment_rounded,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const WeeklyReportScreen()),
-                      );
-                    },
-                  ),
+
                   _GlowButton(
                     icon: Icons.logout_rounded,
                     onTap: () => ref.read(authProvider.notifier).signOut(),
@@ -223,7 +185,7 @@ class DashboardScreen extends HookConsumerWidget {
                       const SizedBox(height: 8),
                       // Cheeky greeting
                       Text(
-                        _getCheekyGreeting(),
+                        _getGreeting(),
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: Colors.white.withValues(alpha: 0.5),
@@ -231,19 +193,46 @@ class DashboardScreen extends HookConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 20),
+                      // Month Selector
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.chevron_left_rounded, color: Colors.white.withOpacity(0.5)),
+                            onPressed: () {
+                              selectedMonth.value = DateTime(selectedMonth.value.year, selectedMonth.value.month - 1);
+                            },
+                          ),
+                          Text(
+                            DateFormat('MMMM yyyy').format(selectedMonth.value),
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.chevron_right_rounded, color: Colors.white.withOpacity(0.5)),
+                            onPressed: () {
+                              selectedMonth.value = DateTime(selectedMonth.value.year, selectedMonth.value.month + 1);
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
                       // Damage Report Card
-                      _DamageReportCard(monthExpenses: monthExpenses),
+                      _DamageReportCard(monthExpenses: monthExpenses, selectedMonth: selectedMonth.value),
                       const SizedBox(height: 24),
                       // Insights
-                      _SectionHeader(label: 'Paise kithe gaye? 🕵️'),
+                      _SectionHeader(label: 'Expense Breakdown'),
                       const SizedBox(height: 12),
-                      _InsightsRow(monthExpenses: monthExpenses),
+                      _InsightsRow(monthExpenses: monthExpenses, selectedMonth: selectedMonth.value),
                       const SizedBox(height: 24),
                       // Transactions header with See All
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _SectionHeader(label: 'Saboot dekh le 📝'),
+                          _SectionHeader(label: 'Recent Transactions'),
                           if (monthExpenses.length > 5)
                             TextButton(
                               onPressed: () {
@@ -253,7 +242,7 @@ class DashboardScreen extends HookConsumerWidget {
                                 );
                               },
                               child: Text(
-                                'Vekho Saare ↗️',
+                                'View All ↗️',
                                 style: GoogleFonts.poppins(
                                   color: const Color(0xFFFF6B35),
                                   fontSize: 12,
@@ -278,7 +267,7 @@ class DashboardScreen extends HookConsumerWidget {
                         const Text('🤑', style: TextStyle(fontSize: 48)),
                         const SizedBox(height: 16),
                         Text(
-                          _getEmptyStateMsg(),
+                          _getEmptyMessage(),
                           style: GoogleFonts.poppins(
                             color: Colors.white.withValues(alpha: 0.4),
                             fontSize: 14,
@@ -287,7 +276,7 @@ class DashboardScreen extends HookConsumerWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Tap + karke kharcha daal paaji',
+                          'Tap + to add an expense',
                           style: GoogleFonts.poppins(
                             color: Colors.white.withValues(alpha: 0.15),
                             fontSize: 12,
@@ -319,7 +308,7 @@ class DashboardScreen extends HookConsumerWidget {
                   padding: const EdgeInsets.only(top: 48, bottom: 180),
                   child: Center(
                     child: Text(
-                      'banaaya with ☕ & galat decisions\nby Bhawuk 🫡',
+                      'PocketLedger Dashboard',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 11,
@@ -334,7 +323,7 @@ class DashboardScreen extends HookConsumerWidget {
           ),  // closes RefreshIndicator
           );
         },
-        loading: () => const _CheekyLoader(message: 'Bhawuk de gunaah gin rahe haan...'),
+        loading: () => const _CheekyLoader(message: 'Loading data...'),
         error: (err, stack) => Center(
           child: Padding(
             padding: const EdgeInsets.all(32),
@@ -344,7 +333,7 @@ class DashboardScreen extends HookConsumerWidget {
                 const Text('⚠️', style: TextStyle(fontSize: 48)),
                 const SizedBox(height: 16),
                 Text(
-                  'Oye! Kuch gadbad ho gayi',
+                  'Something went wrong',
                   style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 16,
@@ -368,7 +357,7 @@ class DashboardScreen extends HookConsumerWidget {
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: Text('Dobara try kar paaji', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                  child: Text('Try again', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                 ),
               ],
             ),
@@ -388,7 +377,7 @@ class DashboardScreen extends HookConsumerWidget {
         elevation: 8,
         icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: Text(
-          'Udaao Paaji 💸',
+          'Add Expense',
           style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700),
         ),
       ),
@@ -521,13 +510,14 @@ final expenseStreamProvider = StreamProvider<List<Expense>>((ref) {
 
 class _DamageReportCard extends StatelessWidget {
   final List<Expense> monthExpenses;
-  const _DamageReportCard({required this.monthExpenses});
+  final DateTime selectedMonth;
+  const _DamageReportCard({required this.monthExpenses, required this.selectedMonth});
 
   @override
   Widget build(BuildContext context) {
     final total = monthExpenses.fold(0.0, (sum, e) => sum + e.amount);
     final indianRupeeFormat = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
-    final monthName = DateFormat('MMMM yyyy').format(DateTime.now());
+    final monthName = DateFormat('MMMM yyyy').format(selectedMonth);
 
     return Container(
       width: double.infinity,
@@ -570,7 +560,7 @@ class _DamageReportCard extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                _getBalanceReaction(total),
+                _getExpenseStatus(total),
                 style: GoogleFonts.poppins(
                   fontSize: 10,
                   color: Colors.white.withValues(alpha: 0.4),
@@ -581,7 +571,7 @@ class _DamageReportCard extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            'Nuqsaan Report 💥',
+            'Total Expenses',
             style: GoogleFonts.poppins(
               color: Colors.white.withValues(alpha: 0.4),
               fontSize: 12,
@@ -603,7 +593,7 @@ class _DamageReportCard extends StatelessWidget {
             children: [
               _FunChip(
                 emoji: '🧾',
-                label: '${monthExpenses.length} gunaahe',
+                label: '${monthExpenses.length} transactions',
                 color: const Color(0xFFFFD166),
               ),
               const SizedBox(width: 8),
@@ -658,7 +648,8 @@ class _FunChip extends StatelessWidget {
 
 class _InsightsRow extends StatelessWidget {
   final List<Expense> monthExpenses;
-  const _InsightsRow({required this.monthExpenses});
+  final DateTime selectedMonth;
+  const _InsightsRow({required this.monthExpenses, required this.selectedMonth});
 
   @override
   Widget build(BuildContext context) {
@@ -699,7 +690,11 @@ class _InsightsRow extends StatelessWidget {
 
     // Daily spending for bar chart
     final now = DateTime.now();
-    final last7Days = List.generate(7, (i) => DateTime(now.year, now.month, now.day - (6 - i)));
+    final isCurrentMonth = selectedMonth.year == now.year && selectedMonth.month == now.month;
+    final referenceDate = isCurrentMonth 
+        ? now 
+        : DateTime(selectedMonth.year, selectedMonth.month + 1, 0); // Last day of selected month
+    final last7Days = List.generate(7, (i) => DateTime(referenceDate.year, referenceDate.month, referenceDate.day - (6 - i)));
     final dailyTotals = <DateTime, double>{};
     for (var date in last7Days) {
       dailyTotals[date] = 0;
@@ -740,7 +735,7 @@ class _InsightsRow extends StatelessWidget {
       children: [
         // Category Breakdown with legend
         _InsightCard(
-          title: 'Kiski galti? 🥧',
+          title: 'Category Distribution',
           height: 200,
           child: Row(
             children: [
@@ -797,7 +792,7 @@ class _InsightsRow extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '$pct%',
+                            '₹${cat.value.toStringAsFixed(0)} ($pct%)',
                             style: GoogleFonts.poppins(
                               color: chartColors[colorIndex],
                               fontSize: 10,
@@ -924,6 +919,7 @@ class _TransactionItem extends ConsumerWidget {
 
   String _getCategoryEmoji(String category) {
     switch (category.toLowerCase()) {
+      case 'food & groceries':
       case 'groceries': return '🛒';
       case 'commute': return '🚌';
       case 'travel': return '🚂';
@@ -940,6 +936,7 @@ class _TransactionItem extends ConsumerWidget {
 
   Color _getCategoryColor(String category) {
     switch (category.toLowerCase()) {
+      case 'food & groceries':
       case 'groceries': return const Color(0xFFFFD166);
       case 'commute': return const Color(0xFF38BDF8);
       case 'travel': return const Color(0xFF06B6D4);
@@ -1013,7 +1010,7 @@ class _TransactionItem extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Ye wapis nahi aayega, pakka delete?',
+              'This action cannot be undone.',
               style: GoogleFonts.poppins(
                 color: Colors.white.withValues(alpha: 0.4),
                 fontSize: 12,
@@ -1025,7 +1022,7 @@ class _TransactionItem extends ConsumerWidget {
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
-              'Rehne de',
+              'Cancel',
               style: GoogleFonts.poppins(
                 color: Colors.white.withValues(alpha: 0.5),
                 fontWeight: FontWeight.w600,
@@ -1088,7 +1085,7 @@ class _TransactionItem extends ConsumerWidget {
             children: [
               const Icon(Icons.delete_rounded, color: Color(0xFFFF6B6B), size: 22),
               const SizedBox(height: 2),
-              Text('hatao', style: GoogleFonts.poppins(color: const Color(0xFFFF6B6B), fontSize: 9, fontWeight: FontWeight.w600)),
+              Text('delete', style: GoogleFonts.poppins(color: const Color(0xFFFF6B6B), fontSize: 9, fontWeight: FontWeight.w600)),
             ],
           ),
         ),

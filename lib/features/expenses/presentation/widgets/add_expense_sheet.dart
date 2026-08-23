@@ -19,11 +19,11 @@ class AddExpenseSheet extends HookConsumerWidget {
     final placeController = useTextEditingController(text: isEditing ? expense!.place : '');
     final notesController = useTextEditingController(text: isEditing ? expense!.notes : '');
     final date = useState(isEditing ? expense!.date : DateTime.now());
-    final category = useState(isEditing ? expense!.category : 'Groceries');
+    final category = useState(isEditing ? expense!.category : 'Food & Groceries');
     final isSaving = useState(false);
 
 final categories = [
-      {'name': 'Groceries', 'emoji': '🛒'},
+      {'name': 'Food & Groceries', 'emoji': '🛒'},
       {'name': 'Commute', 'emoji': '🚌'},
       {'name': 'Travel', 'emoji': '🚂'},
       {'name': 'Shopping', 'emoji': '🛍️'},
@@ -110,7 +110,7 @@ final categories = [
                       ),
                     ),
                     Text(
-                      isEditing ? 'galti sudhaar lo abhi' : 'kitna udaaya aaj?',
+                      isEditing ? 'modify transaction details' : 'record a new transaction',
                       style: GoogleFonts.poppins(
                         color: Colors.white.withValues(alpha: 0.3),
                         fontSize: 11,
@@ -170,7 +170,7 @@ final categories = [
             _ModernInput(
               controller: placeController,
               label: 'Kithe udaaye? 📍',
-              hint: 'e.g. Sardar ji ka dhaba...',
+              hint: 'e.g. Coffee shop...',
               icon: Icons.place_rounded,
             ),
             const SizedBox(height: 20),
@@ -273,7 +273,7 @@ final categories = [
                     ),
                     const Spacer(),
                     Text(
-                      'Badlo',
+                      'Change',
                       style: GoogleFonts.poppins(color: const Color(0xFFFF6B35), fontSize: 12, fontWeight: FontWeight.w600),
                     ),
                   ],
@@ -285,7 +285,7 @@ final categories = [
             _ModernInput(
               controller: notesController,
               label: 'Kuch yaad rakhna hai? 📝',
-              hint: 'notes likh le...',
+              hint: 'add any notes...',
               icon: Icons.note_rounded,
               maxLines: 2,
             ),
@@ -326,13 +326,13 @@ final categories = [
                           style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
                         ),
                         content: Text(
-                          'Ye wapis nahi aayega, pakka delete?',
+                          'This action cannot be undone.',
                           style: GoogleFonts.poppins(color: Colors.white.withValues(alpha: 0.4), fontSize: 13),
                         ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx),
-                            child: Text('Rehne de', style: GoogleFonts.poppins(color: Colors.white.withValues(alpha: 0.5), fontWeight: FontWeight.w600)),
+                            child: Text('Cancel', style: GoogleFonts.poppins(color: Colors.white.withValues(alpha: 0.5), fontWeight: FontWeight.w600)),
                           ),
                           TextButton(
                             onPressed: () {
