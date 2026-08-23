@@ -37,4 +37,4 @@ Contains the single source of truth for our database architecture.
 
 ## 🚀 CI/CD Pipelines
 This repository uses GitHub Actions for automated builds.
-- **Release APK:** Triggers on `v*` tags or manual dispatch. It builds the Flutter app located in `pocketledger-frontend` and attaches the APKs to a GitHub Release.
+- **Semantic Release & APK Build:** Triggers automatically on pushes to main/master. It uses semantic-release to analyze Conventional Commits, auto-generate changelogs, bump the version, build the Flutter APKs from pocketledger-frontend, and attach them to a new GitHub Release.

@@ -1,31 +1,27 @@
-# Bhawuk's Personal Expense Tracker 💸🦁
+# PocketLedger Frontend 📱
 
-**"Oye! Paise da hisaab, Bhawuk da style!"**
-
-Welcome to **Bhawuk's Personal Expense Tracker** (aka *Bhawuk's Kharcha*). This is a cute, high-energy, and slightly dramatic fintech app built to stop Bhawuk from spending all his rupees on rajma chawal and impulse gaming gear. 🚀
+A modern, professional, and responsive personal finance tracker built with Flutter.
 
 ---
 
-## 🦄 Why does this exist?
-Because spreadsheets are boring, and writing down *“₹500 - golgappe”* in a paper diary is very 1999. Bhawuk needs a sleek dark UI, custom Punjabi reminders, and zero lag to keep his financial life together.
+## ✨ Features (Sleek & Powerful)
 
----
-
-## ✨ Features (Pocket-Sized & Powerful)
-
-*   **Zero-Lag Logger ⚡:** Tap "Daal De Paaji" and the screen vanishes instantly! No waiting for the database to reply while you stand awkwardly at the cashier.
-*   **Double-Tap Shield 🛡️:** Buttons disable instantly so you don't log your daily tea cost 5 times.
+*   **Zero-Lag Logger ⚡:** Tap "Save Expense" and the screen updates instantly with local-first Hive caching. No waiting for the database to reply while you stand awkwardly at the cashier.
+*   **Double-Tap Shield 🛡️:** Buttons disable instantly to prevent duplicate transaction entries.
 *   **Vibrant Categories 🏷️:**
-    *   🍔 *Food* (Obviously)
-    *   🚗 *Transport* (When walking is not an option)
-    *   🛍️ *Shopping* (Impulse decisions)
-    *   📨 *Bills* (The sad adult stuff)
-    *   🎬 *Entertainment* (Movies & chill)
-    *   💊 *Health* (Gym & multivitamin hype)
-    *   ⚽ *Sports* (For cricket bats and gym memberships)
-    *   🏷️ *Miscellaneous* (For stuff that makes you say *"ye kahaan gaya?"*)
-*   **Nuclear Sync ⚛️:** Automatically syncs with Supabase database when online. Offline? Hive stores it locally like a good friend.
-*   **Punjabi Alerts 🔔:** Gets notifications like *"Oye Bhawuk! Aaj ka kharcha daala ki nahi? 🧐"*
+    *   🛒 *Food & Groceries*
+    *   🚌 *Commute*
+    *   🚂 *Travel*
+    *   🛍️ *Shopping*
+    *   📨 *Bills*
+    *   🎬 *Entertainment*
+    *   💊 *Health*
+    *   ⚽ *Sports*
+    *   📈 *Investments*
+    *   🏷️ *Miscellaneous*
+*   **Dynamic Insight Cards 📊:** Flexible pie charts and bar graphs that automatically expand and scale to perfectly fit your category breakdowns without pixel overflow.
+*   **Smart Sync ⚛️:** Automatically syncs with the FastAPI backend database when online. Offline? Hive stores it locally and pushes it later.
+*   **Smart Notifications 🔔:** Provides contextual, scheduled reminders to log daily transactions.
 
 ---
 
@@ -48,7 +44,3 @@ Build the release bundle with the production backend URL defined:
 ```bash
 flutter build apk --release --dart-define=BACKEND_URL=https://your-backend-service.render.com
 ```
-
----
-
-*Made with ☕, 🎮, and questionable financial choices by Bhawuk. 🫡*
