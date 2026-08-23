@@ -148,7 +148,7 @@ class DashboardScreen extends HookConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Bhawuk's Kharcha",
+                          "PocketLedger",
                           style: GoogleFonts.poppins(
                             fontSize: 17,
                             fontWeight: FontWeight.w700,
@@ -303,7 +303,7 @@ class DashboardScreen extends HookConsumerWidget {
                       _DamageReportCard(monthExpenses: monthExpenses),
                       const SizedBox(height: 24),
                       // Insights
-                      _SectionHeader(label: 'Paise kithe gaye? 🕵️'),
+                      _SectionHeader(label: 'Expense Breakdown'),
                       const SizedBox(height: 12),
                       _InsightsRow(monthExpenses: monthExpenses),
                       const SizedBox(height: 24),
@@ -311,7 +311,7 @@ class DashboardScreen extends HookConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _SectionHeader(label: 'Saboot dekh le 📝'),
+                          _SectionHeader(label: 'Recent Transactions'),
                           if (monthExpenses.length > 5)
                             TextButton(
                               onPressed: () {
@@ -387,7 +387,7 @@ class DashboardScreen extends HookConsumerWidget {
                   padding: const EdgeInsets.only(top: 48, bottom: 180),
                   child: Center(
                     child: Text(
-                      'banaaya with ☕ & galat decisions\nby Bhawuk 🫡',
+                      'PocketLedger Dashboard',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 11,
@@ -402,7 +402,7 @@ class DashboardScreen extends HookConsumerWidget {
           ),  // closes RefreshIndicator
           );
         },
-        loading: () => const _CheekyLoader(message: 'Bhawuk de gunaah gin rahe haan...'),
+        loading: () => const _CheekyLoader(message: 'Loading data...'),
         error: (err, stack) => Center(
           child: Padding(
             padding: const EdgeInsets.all(32),
@@ -412,7 +412,7 @@ class DashboardScreen extends HookConsumerWidget {
                 const Text('⚠️', style: TextStyle(fontSize: 48)),
                 const SizedBox(height: 16),
                 Text(
-                  'Oye! Kuch gadbad ho gayi',
+                  'Something went wrong',
                   style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 16,
@@ -436,7 +436,7 @@ class DashboardScreen extends HookConsumerWidget {
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: Text('Dobara try kar paaji', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                  child: Text('Try again', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                 ),
               ],
             ),
@@ -456,7 +456,7 @@ class DashboardScreen extends HookConsumerWidget {
         elevation: 8,
         icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: Text(
-          'Udaao Paaji 💸',
+          'Add Expense',
           style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700),
         ),
       ),
@@ -649,7 +649,7 @@ class _DamageReportCard extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            'Nuqsaan Report 💥',
+            'Total Expenses',
             style: GoogleFonts.poppins(
               color: Colors.white.withValues(alpha: 0.4),
               fontSize: 12,
@@ -808,8 +808,7 @@ class _InsightsRow extends StatelessWidget {
       children: [
         // Category Breakdown with legend
         _InsightCard(
-          title: 'Kiski galti? 🥧',
-          height: 200,
+          title: 'Category Distribution',
           child: Row(
             children: [
               // Pie chart
@@ -865,7 +864,7 @@ class _InsightsRow extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '$pct%',
+                            '₹${cat.value.toStringAsFixed(0)} ($pct%)',
                             style: GoogleFonts.poppins(
                               color: chartColors[colorIndex],
                               fontSize: 10,
@@ -951,8 +950,8 @@ class _InsightsRow extends StatelessWidget {
 class _InsightCard extends StatelessWidget {
   final String title;
   final Widget child;
-  final double height;
-  const _InsightCard({required this.title, required this.child, this.height = 148});
+  final double? height;
+  const _InsightCard({required this.title, required this.child, this.height});
 
   @override
   Widget build(BuildContext context) {
@@ -976,7 +975,7 @@ class _InsightCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          Expanded(child: child),
+          if (height != null) Expanded(child: child) else child,
         ],
       ),
     );
@@ -1030,7 +1029,7 @@ class _TransactionItem extends ConsumerWidget {
         backgroundColor: const Color(0xFF1A1A24),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
-          'Sachchi delete karna hai? 🤔',
+          'Delete this expense? 🤔',
           style: GoogleFonts.poppins(
             color: Colors.white,
             fontSize: 16,
@@ -1081,7 +1080,7 @@ class _TransactionItem extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Ye wapis nahi aayega, pakka delete?',
+              'This action cannot be undone.',
               style: GoogleFonts.poppins(
                 color: Colors.white.withValues(alpha: 0.4),
                 fontSize: 12,
@@ -1093,7 +1092,7 @@ class _TransactionItem extends ConsumerWidget {
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
-              'Rehne de',
+              'Cancel',
               style: GoogleFonts.poppins(
                 color: Colors.white.withValues(alpha: 0.5),
                 fontWeight: FontWeight.w600,
@@ -1104,7 +1103,7 @@ class _TransactionItem extends ConsumerWidget {
             onPressed: () {
               Navigator.pop(ctx);
               ref.read(expenseRepositoryProvider).deleteExpense(expense.remoteId);
-              final msgs = ['Khatam-tata-bye-bye 👋', 'Ud gaya! Samajh ja 💨', 'Saboot mitaa diye 🗑️', 'Hoya hi nahi samajh le 🤫'];
+              final msgs = ['Transaction deleted', 'Removed successfully', 'Item deleted', 'Erased permanently'];
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(msgs[Random().nextInt(msgs.length)], style: GoogleFonts.poppins()),
@@ -1116,7 +1115,7 @@ class _TransactionItem extends ConsumerWidget {
               );
             },
             child: Text(
-              'Hatao! 🗑️',
+              'Delete',
               style: GoogleFonts.poppins(
                 color: const Color(0xFFFF6B6B),
                 fontWeight: FontWeight.w700,
@@ -1266,8 +1265,8 @@ class _TransactionItem extends ConsumerWidget {
                         ),
                         child: const Icon(Icons.delete_rounded, color: Color(0xFFFF6B6B), size: 18),
                       ),
-                      title: Text('Delete karo 🗑️', style: GoogleFonts.poppins(color: const Color(0xFFFF6B6B), fontWeight: FontWeight.w600, fontSize: 14)),
-                      subtitle: Text('Saboot mitaa de, jaise hoya hi nahi', style: GoogleFonts.poppins(color: Colors.white.withValues(alpha: 0.3), fontSize: 11)),
+                      title: Text('Delete Transaction', style: GoogleFonts.poppins(color: const Color(0xFFFF6B6B), fontWeight: FontWeight.w600, fontSize: 14)),
+                      subtitle: Text('This action cannot be undone.', style: GoogleFonts.poppins(color: Colors.white.withValues(alpha: 0.3), fontSize: 11)),
                       onTap: () {
                         Navigator.pop(ctx);
                         _showDeleteConfirmation(context, ref);

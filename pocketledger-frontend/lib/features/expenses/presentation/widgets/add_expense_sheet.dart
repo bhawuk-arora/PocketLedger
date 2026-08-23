@@ -102,7 +102,7 @@ final categories = [
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isEditing ? 'Edit Karo 📝' : 'Naya Kharcha 💸',
+                      isEditing ? 'Edit Expense 📝' : 'New Expense 💸',
                       style: GoogleFonts.poppins(
                         color: Colors.white,
                         fontSize: 20,
@@ -110,7 +110,7 @@ final categories = [
                       ),
                     ),
                     Text(
-                      isEditing ? 'galti sudhaar lo abhi' : 'kitna udaaya aaj?',
+                      isEditing ? 'modify transaction details' : 'record a new transaction',
                       style: GoogleFonts.poppins(
                         color: Colors.white.withValues(alpha: 0.3),
                         fontSize: 11,
@@ -169,14 +169,14 @@ final categories = [
             // Place Input
             _ModernInput(
               controller: placeController,
-              label: 'Kithe udaaye? 📍',
-              hint: 'e.g. Sardar ji ka dhaba...',
+              label: 'Where did you spend? 📍',
+              hint: 'e.g. Coffee shop...',
               icon: Icons.place_rounded,
             ),
             const SizedBox(height: 20),
             // Category
             Text(
-              'Kis type da kharcha? 🤔',
+              'Category 🤔',
               style: GoogleFonts.poppins(
                 color: Colors.white.withValues(alpha: 0.5),
                 fontSize: 13,
@@ -273,7 +273,7 @@ final categories = [
                     ),
                     const Spacer(),
                     Text(
-                      'Badlo',
+                      'Change',
                       style: GoogleFonts.poppins(color: const Color(0xFFFF6B35), fontSize: 12, fontWeight: FontWeight.w600),
                     ),
                   ],
@@ -284,8 +284,8 @@ final categories = [
             // Notes Input
             _ModernInput(
               controller: notesController,
-              label: 'Kuch yaad rakhna hai? 📝',
-              hint: 'notes likh le...',
+              label: 'Notes 📝',
+              hint: 'add any notes...',
               icon: Icons.note_rounded,
               maxLines: 2,
             ),
@@ -303,7 +303,7 @@ final categories = [
                   elevation: 0,
                 ),
                 child: Text(
-                  isEditing ? 'Update Kar De ✅' : 'Daal De Paaji 🚀',
+                  isEditing ? 'Update Expense ✅' : 'Save Expense 🚀',
                   style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 15),
                 ),
               ),
@@ -322,24 +322,24 @@ final categories = [
                         backgroundColor: const Color(0xFF1A1A24),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         title: Text(
-                          'Sachchi delete karna hai? 🤔',
+                          'Delete this expense? 🤔',
                           style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
                         ),
                         content: Text(
-                          'Ye wapis nahi aayega, pakka delete?',
+                          'This action cannot be undone.',
                           style: GoogleFonts.poppins(color: Colors.white.withValues(alpha: 0.4), fontSize: 13),
                         ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx),
-                            child: Text('Rehne de', style: GoogleFonts.poppins(color: Colors.white.withValues(alpha: 0.5), fontWeight: FontWeight.w600)),
+                            child: Text('Cancel', style: GoogleFonts.poppins(color: Colors.white.withValues(alpha: 0.5), fontWeight: FontWeight.w600)),
                           ),
                           TextButton(
                             onPressed: () {
                               ref.read(expenseRepositoryProvider).deleteExpense(expense!.remoteId);
                               Navigator.pop(context);
                             },
-                            child: Text('Hatao! 🗑️', style: GoogleFonts.poppins(color: const Color(0xFFFF6B6B), fontWeight: FontWeight.w700)),
+                            child: Text('Delete', style: GoogleFonts.poppins(color: const Color(0xFFFF6B6B), fontWeight: FontWeight.w700)),
                           ),
                         ],
                       ),
@@ -351,7 +351,7 @@ final categories = [
                   ),
                   icon: const Icon(Icons.delete_rounded, color: Color(0xFFFF6B6B), size: 18),
                   label: Text(
-                    'Delete Karo 🗑️',
+                    'Delete Expense 🗑️',
                     style: GoogleFonts.poppins(color: const Color(0xFFFF6B6B), fontWeight: FontWeight.w600, fontSize: 13),
                   ),
                 ),

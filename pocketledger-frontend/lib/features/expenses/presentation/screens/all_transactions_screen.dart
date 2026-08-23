@@ -91,7 +91,7 @@ class AllTransactionsScreen extends HookConsumerWidget {
       backgroundColor: const Color(0xFF121218),
       appBar: AppBar(
         title: Text(
-          'Saboot di List 📝',
+          'All Transactions',
           style: GoogleFonts.poppins(
               fontWeight: FontWeight.w700, color: Colors.white),
         ),
@@ -170,7 +170,7 @@ class AllTransactionsScreen extends HookConsumerWidget {
             child: transactions.value.isEmpty && !isLoading.value
                 ? Center(
                     child: Text(
-                      'Oye! Kuch nahi hai dekhne nu 💸',
+                      'No transactions found.',
                       style: GoogleFonts.poppins(color: Colors.white38),
                     ),
                   )
@@ -195,7 +195,7 @@ class AllTransactionsScreen extends HookConsumerWidget {
                                 const EdgeInsets.symmetric(vertical: 48),
                             child: Center(
                               child: Text(
-                                'Saare pakke saboot ne 📝🫡',
+                                'End of transactions',
                                 style: GoogleFonts.poppins(
                                   fontSize: 11,
                                   color: Colors.white

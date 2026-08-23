@@ -1,0 +1,121 @@
+name: Semantic Release & Build APK
+
+on:
+  # push:
+  #   branches:
+  #     - main
+  #     - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  release:
+    name: Build & Semantic Release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      - name: Check Semantic Release
+        id: semantic_check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm install -g semantic-release @semantic-release/commit-analyzer @semantic-release/release-notes-generator @semantic-release/github
+          
+          cat << 'RC_EOF' > .releaserc.json
+          {
+            "branches": ["main", "master"],
+            "plugins": [
+              "@semantic-release/commit-analyzer",
+              "@semantic-release/release-notes-generator"
+            ]
+          }
+          RC_EOF
+          
+          OUTPUT=$(npx semantic-release --dry-run)
+          echo "$OUTPUT"
+          if echo "$OUTPUT" | grep -q "The next release version is"; then
+            echo "WILL_RELEASE=true" >> $GITHUB_ENV
+          else
+            echo "WILL_RELEASE=false" >> $GITHUB_ENV
+          fi
+
+      - name: Setup Java 17
+        if: env.WILL_RELEASE == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Setup Flutter
+        if: env.WILL_RELEASE == 'true'
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.7'
+          channel: 'stable'
+          cache: true
+
+      - name: Get Flutter dependencies & Build
+        if: env.WILL_RELEASE == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        run: |
+          cd pocketledger-frontend && flutter pub get
+          
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > pocketledger-frontend/android/app/release-keystore.jks
+            echo "storePassword=$STORE_PASSWORD" > pocketledger-frontend/android/key.properties
+            echo "keyPassword=$KEY_PASSWORD" >> pocketledger-frontend/android/key.properties
+            echo "keyAlias=$KEY_ALIAS" >> pocketledger-frontend/android/key.properties
+            echo "storeFile=release-keystore.jks" >> pocketledger-frontend/android/key.properties
+          fi
+          
+          cd pocketledger-frontend && flutter build apk --release --split-per-abi
+          
+          mkdir -p pocketledger-frontend/build/app/outputs/apk_temp
+          cp pocketledger-frontend/build/app/outputs/flutter-apk/*.apk pocketledger-frontend/build/app/outputs/apk_temp/
+          
+          cd pocketledger-frontend && flutter build apk --release
+          
+          cp pocketledger-frontend/build/app/outputs/apk_temp/*.apk pocketledger-frontend/build/app/outputs/flutter-apk/
+          rm -rf pocketledger-frontend/build/app/outputs/apk_temp
+
+      - name: Run Semantic Release
+        if: env.WILL_RELEASE == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cat << 'RC_EOF' > .releaserc.json
+          {
+            "branches": ["main", "master"],
+            "plugins": [
+              "@semantic-release/commit-analyzer",
+              "@semantic-release/release-notes-generator",
+              ["@semantic-release/github", {
+                "assets": [
+                  {"path": "pocketledger-frontend/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk", "label": "ARM64 APK (Modern Phones)"},
+                  {"path": "pocketledger-frontend/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk", "label": "ARMv7 APK (Older Phones)"},
+                  {"path": "pocketledger-frontend/build/app/outputs/flutter-apk/app-release.apk", "label": "Universal APK"}
+                ]
+              }]
+            ]
+          }
+          RC_EOF
+          npx semantic-release
