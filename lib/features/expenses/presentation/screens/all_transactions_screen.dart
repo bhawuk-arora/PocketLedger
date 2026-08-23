@@ -10,7 +10,8 @@ import 'package:pocket_ledger/features/expenses/presentation/screens/dashboard_s
 import 'package:pocket_ledger/features/expenses/presentation/widgets/add_expense_sheet.dart';
 
 class AllTransactionsScreen extends HookConsumerWidget {
-  const AllTransactionsScreen({super.key});
+  final DateTime? selectedMonth;
+  const AllTransactionsScreen({super.key, this.selectedMonth});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,7 +35,7 @@ class AllTransactionsScreen extends HookConsumerWidget {
         data: (expenses) {
           final selectedCategory = useState<String>('All');
           
-          final now = DateTime.now();
+          final now = selectedMonth ?? DateTime.now();
           // Extract unique categories from all expenses for this month
           final baseMonthExpenses = expenses.where((e) =>
             e.date.year == now.year && e.date.month == now.month

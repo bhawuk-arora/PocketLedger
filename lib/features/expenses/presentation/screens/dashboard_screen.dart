@@ -238,7 +238,7 @@ class DashboardScreen extends HookConsumerWidget {
                               onPressed: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const AllTransactionsScreen()),
+                                  MaterialPageRoute(builder: (context) => AllTransactionsScreen(selectedMonth: selectedMonth.value)),
                                 );
                               },
                               child: Text(
