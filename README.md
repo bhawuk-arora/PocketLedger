@@ -38,3 +38,4 @@ Contains the single source of truth for our database architecture.
 ## 🚀 CI/CD Pipelines
 This repository uses GitHub Actions for automated builds.
 - **Semantic Release & APK Build:** Triggers automatically on pushes to main/master. It uses semantic-release to analyze Conventional Commits, auto-generate changelogs, bump the version, build the Flutter APKs from pocketledger-frontend, and attach them to a new GitHub Release.
+test1
