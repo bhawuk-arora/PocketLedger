@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -8,7 +9,7 @@ import 'package:pocket_ledger/features/expenses/data/repositories/expense_reposi
 import 'package:pocket_ledger/features/expenses/presentation/screens/dashboard_screen.dart'; 
 import 'package:pocket_ledger/features/expenses/presentation/widgets/add_expense_sheet.dart';
 
-class AllTransactionsScreen extends ConsumerWidget {
+class AllTransactionsScreen extends HookConsumerWidget {
   const AllTransactionsScreen({super.key});
 
   @override
@@ -19,7 +20,7 @@ class AllTransactionsScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFF121218),
       appBar: AppBar(
         title: Text(
-          'Saboot di List 📝',
+          'All Transactions',
           style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
         backgroundColor: const Color(0xFF121218),
@@ -31,15 +32,24 @@ class AllTransactionsScreen extends ConsumerWidget {
       ),
       body: expensesAsync.when(
         data: (expenses) {
+          final selectedCategory = useState<String>('All');
+          
           final now = DateTime.now();
-          final monthExpenses = expenses.where((e) =>
+          // Extract unique categories from all expenses for this month
+          final baseMonthExpenses = expenses.where((e) =>
             e.date.year == now.year && e.date.month == now.month
           ).toList();
+          
+          final categories = ['All', ...baseMonthExpenses.map((e) => e.category).toSet().toList()];
+          
+          final monthExpenses = selectedCategory.value == 'All' 
+              ? baseMonthExpenses 
+              : baseMonthExpenses.where((e) => e.category == selectedCategory.value).toList();
 
-          if (monthExpenses.isEmpty) {
+          if (baseMonthExpenses.isEmpty) {
             return Center(
               child: Text(
-                'Oye! Kuch nahi hai dekhne nu 💸',
+                'No transactions found.',
                 style: GoogleFonts.poppins(color: Colors.white38),
               ),
             );
@@ -55,7 +65,7 @@ class AllTransactionsScreen extends ConsumerWidget {
                 child: Column(
                   children: [
                     Text(
-                      'This Month\'s Damage',
+                      'Total Expenses',
                       style: GoogleFonts.poppins(
                         color: Colors.white38,
                         fontSize: 12,
@@ -73,6 +83,47 @@ class AllTransactionsScreen extends ConsumerWidget {
                   ],
                 ),
               ),
+              
+              // Category Filter UI
+              SizedBox(
+                height: 40,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) {
+                    final cat = categories[index];
+                    final isSelected = selectedCategory.value == cat;
+                    return GestureDetector(
+                      onTap: () => selectedCategory.value = cat,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isSelected ? const Color(0xFFFF6B35) : const Color(0xFF1A1A24),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isSelected ? const Color(0xFFFF6B35) : Colors.white.withOpacity(0.1),
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            cat,
+                            style: GoogleFonts.poppins(
+                              color: isSelected ? Colors.white : Colors.white70,
+                              fontSize: 12,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+              
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.only(left: 20, right: 20, top: 0, bottom: 180),
@@ -83,7 +134,7 @@ class AllTransactionsScreen extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(vertical: 48),
                         child: Center(
                           child: Text(
-                            'Saare pakke saboot ne 📝🫡',
+                            'End of transactions',
                             style: GoogleFonts.poppins(
                               fontSize: 11,
                               color: Colors.white.withValues(alpha: 0.1),
