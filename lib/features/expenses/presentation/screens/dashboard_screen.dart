@@ -736,7 +736,6 @@ class _InsightsRow extends StatelessWidget {
         // Category Breakdown with legend
         _InsightCard(
           title: 'Category Distribution',
-          height: 200,
           child: Row(
             children: [
               // Pie chart
@@ -878,8 +877,8 @@ class _InsightsRow extends StatelessWidget {
 class _InsightCard extends StatelessWidget {
   final String title;
   final Widget child;
-  final double height;
-  const _InsightCard({required this.title, required this.child, this.height = 148});
+  final double? height;
+  const _InsightCard({required this.title, required this.child, this.height});
 
   @override
   Widget build(BuildContext context) {
@@ -903,7 +902,7 @@ class _InsightCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          Expanded(child: child),
+          if (height != null) Expanded(child: child) else child,
         ],
       ),
     );
