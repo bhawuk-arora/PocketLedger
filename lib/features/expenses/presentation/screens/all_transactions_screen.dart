@@ -16,6 +16,7 @@ class AllTransactionsScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final expensesAsync = ref.watch(expenseStreamProvider);
+    final selectedCategory = useState<String>('All');
 
     return Scaffold(
       backgroundColor: const Color(0xFF121218),
@@ -33,8 +34,6 @@ class AllTransactionsScreen extends HookConsumerWidget {
       ),
       body: expensesAsync.when(
         data: (expenses) {
-          final selectedCategory = useState<String>('All');
-          
           final now = selectedMonth ?? DateTime.now();
           // Extract unique categories from all expenses for this month
           final baseMonthExpenses = expenses.where((e) =>

@@ -43,6 +43,9 @@ class DashboardScreen extends HookConsumerWidget {
     final expensesAsync = ref.watch(expenseStreamProvider);
     final theme = Theme.of(context);
     final onSurface = theme.colorScheme.onSurface;
+    
+    final currentNow = DateTime.now();
+    final selectedMonth = useState(DateTime(currentNow.year, currentNow.month));
 
     // Update home screen widget when data changes
     ref.listen(expenseStreamProvider, (previous, next) {
@@ -53,8 +56,6 @@ class DashboardScreen extends HookConsumerWidget {
       backgroundColor: theme.scaffoldBackgroundColor,
       body: expensesAsync.when(
         data: (expenses) {
-          final now = DateTime.now();
-          final selectedMonth = useState(DateTime(now.year, now.month));
           final monthExpenses = expenses.where((e) =>
             e.date.year == selectedMonth.value.year && e.date.month == selectedMonth.value.month
           ).toList();
